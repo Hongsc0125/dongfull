@@ -1,0 +1,38 @@
+import { auth } from '../../../../../auth'
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth()
+    
+    if (!session?.accessToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Discord API로부터 사용자 길드 정보 가져오기
+    const response = await fetch('https://discord.com/api/users/@me/guilds', {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch guilds')
+    }
+
+    const guilds = await response.json()
+    
+    // 봇이 있는 길드들만 필터링하기 위해 백엔드 API 호출
+    const backendResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:3001'}/api/guilds`)
+    const botGuilds = await backendResponse.json()
+    
+    const botGuildIds = new Set(botGuilds.map((guild: { guild_id: string }) => guild.guild_id))
+    
+    const filteredGuilds = guilds.filter((guild: { id: string }) => botGuildIds.has(guild.id))
+    
+    return NextResponse.json(filteredGuilds)
+  } catch (error) {
+    console.error('Error fetching user guilds:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
