@@ -1,0 +1,39 @@
+{
+  "name": "rank-bot-project",
+  "version": "1.0.0",
+  "description": "A ranking bot with web interface using React and shadcn/ui",
+  "main": "src/server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "nodemon src/server/index.js",
+    "client:dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "node src/server/index.js",
+    "install:all": "npm install && cd client && npm install",
+    "bot": "node src/bot/index.js",
+    "deploy-commands": "node src/bot/commands/deploy.js"
+  },
+  "keywords": [
+    "bot",
+    "discord",
+    "ranking",
+    "react",
+    "shadcn"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "node-cron": "^4.2.1",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2"
+  }
+}
