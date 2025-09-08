@@ -1,0 +1,42 @@
+<!-- 파일명: crown-emoji-color.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Gold Crown Emoji</title>
+
+  <!-- 그림자 필터 -->
+  <defs>
+    <linearGradient id="gGold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffd94a"/>
+      <stop offset="1" stop-color="#f0a800"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+    <linearGradient id="bgGrad" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#fffdf5"/>
+      <stop offset="1" stop-color="#fff0d6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 둥근 정사각형 배경 -->
+  <rect x="4" y="4" width="120" height="120" rx="20" ry="20" fill="url(#bgGrad)"/>
+
+  <!-- 왕관 그림자 -->
+  <g filter="url(#shadow)" transform="translate(0,2)">
+    <!-- 몸체 -->
+    <path d="M18 86 L28 44 L46 64 L64 36 L82 64 L100 44 L110 86 Z"
+          fill="url(#gGold)" stroke="#c07a00" stroke-width="2" stroke-linejoin="round"/>
+    <!-- 내부 라이트 하이라이트 -->
+    <path d="M22 82 L30 50 L46 64 L64 42 L82 64 L100 50 L106 82 Z"
+          fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- 보석 (원형) -->
+  <circle cx="28" cy="46" r="6" fill="#7bdff6" stroke="#2aa8b8" stroke-width="1.5"/>
+  <circle cx="64" cy="36" r="6" fill="#ff7bd1" stroke="#c14a86" stroke-width="1.5"/>
+  <circle cx="100" cy="46" r="6" fill="#ffd27b" stroke="#d08911" stroke-width="1.5"/>
+
+  <!-- 아래 베이스 장식 -->
+  <rect x="18" y="84" width="92" height="10" rx="3" fill="#d58900" opacity="0.9" />
+  <rect x="22" y="86" width="84" height="6" rx="3" fill="#f6c24a" />
+
+</svg>
