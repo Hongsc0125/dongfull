@@ -1,18 +1,23 @@
 {
-  "name": "rank-bot-project",
+  "name": "event-board",
   "version": "1.0.0",
-  "description": "A ranking bot with web interface using React and shadcn/ui",
+  "description": "Discord event ranking board with web interface using React and shadcn/ui",
   "main": "src/server/index.js",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "dev": "concurrently \"npm run bot\" \"npm run client:dev\"",
+    "dev:web": "npm run client:dev",
     "server:dev": "nodemon src/server/index.js",
     "client:dev": "cd client && npm run dev",
     "build": "cd client && npm run build",
-    "start": "node src/server/index.js",
+    "start": "cd client && npm start",
     "install:all": "npm install && cd client && npm install",
     "bot": "node src/bot/index.js",
-    "deploy-commands": "node src/bot/commands/deploy.js"
+    "deploy-commands": "node src/bot/commands/deploy.js",
+    "start:all": "./start.sh",
+    "stop:all": "./stop.sh",
+    "logs:backend": "tail -f logs/backend.log",
+    "logs:frontend": "tail -f logs/frontend.log"
   },
   "keywords": [
     "bot",
