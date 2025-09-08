@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { initDatabase } from '../database/init.js';
-import { getEvents } from '../database/events.js';
+import { getEvents, getEventById } from '../database/events.js';
 import { getLeaderboard } from '../database/participants.js';
 import { client } from '../bot/index.js';
 
@@ -23,6 +23,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api/bot/status', (req, res) => {
     const isOnline = client.isReady();
     res.json({
+        online: isOnline,
         status: isOnline ? 'online' : 'offline',
         guilds: isOnline ? client.guilds.cache.size : 0,
         users: isOnline ? client.users.cache.size : 0,
@@ -41,10 +42,26 @@ app.get('/api/events/:guildId', async (req, res) => {
     }
 });
 
+app.get('/api/event/:eventId', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const event = await getEventById(parseInt(eventId));
+        
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+        
+        res.json(event);
+    } catch (error) {
+        console.error('Error fetching event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.get('/api/leaderboard/:eventId', async (req, res) => {
     try {
         const { eventId } = req.params;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = parseInt(req.query.limit) || 999;
         
         const leaderboard = await getLeaderboard(parseInt(eventId), limit);
         res.json(leaderboard);
@@ -60,6 +77,7 @@ app.get('/api/guilds', (req, res) => {
     }
 
     const guilds = client.guilds.cache.map(guild => ({
+        guild_id: guild.id,
         id: guild.id,
         name: guild.name,
         icon: guild.iconURL(),
