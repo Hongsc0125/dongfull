@@ -55,13 +55,13 @@ async function handleRanking(interaction) {
 }
 
 // 리더보드 표시 함수
-async function displayLeaderboard(interaction, event, limit = 10) {
+async function displayLeaderboard(interaction, event, limit = 999) {
     try {
         // 리더보드 데이터 가져오기
         const leaderboard = await getLeaderboard(event.id, limit);
 
         if (leaderboard.length === 0) {
-            const emptyContent = `## 📊 ${event.event_name} - 리더보드\n\n` +
+            const emptyContent = `## 📊 ${event.event_name}\n\n` +
                                  '아직 참가자가 없습니다.\n\n' + 
                                  '### 📝 참가 방법\n' +
                                  '관리자가 `/점수추가` 명령어로 점수를 추가해야 합니다.';
@@ -83,10 +83,8 @@ async function displayLeaderboard(interaction, event, limit = 10) {
             });
         }
 
-        // Create leaderboard text
         const leaderboardText = leaderboard.map((participant, index) => {
             const rankEmoji = getRankEmoji(participant.rank);
-            // calculated_score가 있으면 사용, 없으면 total_score 사용 (하위 호환성)
             const displayScore = participant.calculated_score !== undefined ? 
                 participant.calculated_score : participant.total_score;
             const score = formatScore(displayScore, event.score_type);
@@ -96,29 +94,30 @@ async function displayLeaderboard(interaction, event, limit = 10) {
         // 집계 방식 표시
         const aggregationDisplay = getAggregationDisplay(event.score_aggregation || 'sum');
         
-        // Combine all content into a single string
-        let fullContent = `## 🏆 ${event.event_name} - 리더보드\n\n` +
-                          `상위 ${Math.min(limit, leaderboard.length)}명의 랭킹\n\n` +
-                          `### 📈 순위\n${leaderboardText}\n\n` +
-                          `### 📊 점수 타입: ${getScoreTypeDisplay(event.score_type)}\n` +
-                          `### 📈 집계 방식: ${aggregationDisplay}\n` +
-                          `### 👥 총 참가자: ${leaderboard.length}명`;
+        let headerContent = `## 🏆 ${event.event_name} 🏆\n\n` +
+                            `상위 ${Math.min(limit, leaderboard.length)}명의 랭킹\n\n`;
 
-        // Only add description if it exists and is not empty
-        if (event.description && event.description.trim().length > 0) {
-            fullContent += `\n\n### 📄 이벤트 설명\n${event.description}`;
-        }
+        let bodyContent = `### 📈 순위\n${leaderboardText}\n\n` +
+                          `> 집계 방식: ${aggregationDisplay}\n` +
+                          `> 총 참가자: ${leaderboard.length}명`;
 
+        const { STATIC_URLS } = await import('../../config/urls.js');
         const section = new SectionBuilder()
             .setThumbnailAccessory(
-                new ThumbnailBuilder().setURL('https://harmari.duckdns.org/static/alarm.png')
+                new ThumbnailBuilder().setURL(STATIC_URLS.KING)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(fullContent)
+                new TextDisplayBuilder().setContent(headerContent)
             );
 
         const container = new ContainerBuilder()
             .addSectionComponents(section)
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(bodyContent)
+            )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )

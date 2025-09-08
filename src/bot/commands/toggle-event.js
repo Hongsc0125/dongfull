@@ -1,12 +1,6 @@
 import {
     PermissionsBitField,
-    ContainerBuilder,
-    SectionBuilder,
-    TextDisplayBuilder,
-    SeparatorBuilder,
-    SeparatorSpacingSize,
-    MessageFlags,
-    ThumbnailBuilder
+    MessageFlags
 } from 'discord.js';
 import { getEventById, updateEvent } from '../../database/events.js';
 
@@ -33,53 +27,13 @@ export async function handleToggleEvent(interaction) {
         const newStatus = !event.is_active;
         const updatedEvent = await updateEvent(eventId, { is_active: newStatus });
 
-        const section = new SectionBuilder()
-            .setThumbnailAccessory(
-                new ThumbnailBuilder().setURL('https://harmari.duckdns.org/static/alarm.png')
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`## 🔄 이벤트 상태가 변경되었습니다`)
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                    `**${event.event_name}**의 상태가 변경되었습니다.\n\n` +
-                    `### 🎯 이벤트명: ${event.event_name}\n` +
-                    `### 🔘 이전 상태: ${event.is_active ? '✅ 활성' : '❌ 비활성'}\n` +
-                    `### 🔘 현재 상태: ${newStatus ? '✅ 활성' : '❌ 비활성'}`
-                )
-            );
-
-        if (newStatus) {
-            section.addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                    `### ✅ 활성화됨\n` +
-                    `• 이제 이 이벤트에 점수를 추가할 수 있습니다\n` +
-                    `• 자동완성 목록에 표시됩니다`
-                )
-            );
-        } else {
-            section.addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                    `### ❌ 비활성화됨\n` +
-                    `• 더 이상 점수를 추가할 수 없습니다\n` +
-                    `• 기존 데이터는 보존됩니다\n` +
-                    `• 언제든지 다시 활성화할 수 있습니다`
-                )
-            );
-        }
-
-        const container = new ContainerBuilder()
-            .addSectionComponents(section)
-            .addSeparatorComponents(
-                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`*변경자: ${interaction.user.tag} • <t:${Math.floor(Date.now() / 1000)}:R>*`)
-            );
+        // 간단한 알림창 스타일
+        const statusText = newStatus ? '✅ 활성화' : '❌ 비활성화';
+        const content = `${statusText}됨: **${event.event_name}**`;
 
         await interaction.reply({ 
-            components: [container],
-            flags: MessageFlags.IsComponentsV2
+            content: content,
+            flags: MessageFlags.Ephemeral
         });
 
     } catch (error) {
@@ -90,3 +44,4 @@ export async function handleToggleEvent(interaction) {
         });
     }
 }
+

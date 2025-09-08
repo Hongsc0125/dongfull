@@ -8,7 +8,7 @@ import {
     ThumbnailBuilder
 } from 'discord.js';
 import { getEventById } from '../../database/events.js';
-import { getParticipants } from '../../database/participants.js';
+import { getLeaderboard } from '../../database/participants.js';
 
 export async function handleEventInfo(interaction) {
     const eventId = parseInt(interaction.options.getString('이벤트'));
@@ -22,73 +22,79 @@ export async function handleEventInfo(interaction) {
             });
         }
 
-        const participants = await getParticipants(event.id);
+        const participants = await getLeaderboard(event.id, 999);
 
-        // Build content in maximum 3 parts to stay within component limit
-        const headerContent = `## 📊 ${event.event_name} - 상세 정보\n\n` +
-                             `### 🆔 이벤트 ID: ${event.id}\n` +
-                             `### 📊 점수 타입: ${getScoreTypeDisplay(event.score_type)}\n` +
-                             `### 🔘 상태: ${event.is_active ? '✅ 활성' : '❌ 비활성'}\n` +
-                             `### 👥 참가자 수: ${participants.length}명\n` +
-                             `### 📅 생성일: <t:${Math.floor(new Date(event.created_at).getTime() / 1000)}:F>`;
-
-        let participantContent = '';
-        let statsContent = '';
-
+        // 이벤트 생성/점수 추가와 비슷한 스타일로 구성
+        let headContent = `## 🎯 ${event.event_name} 이벤트 정보!\n`;
+        
         if (event.description) {
-            participantContent += `### 📄 설명: ${event.description}\n\n`;
+            headContent += `### ${event.description}\n`;
         }
 
-        // Show top 5 participants
+        // 집계 방식 표시
+        let aggregationDisplay = '';
+        switch (event.score_aggregation) {
+            case 'average':
+                aggregationDisplay = '📊 평균';
+                break;
+            case 'best':
+                aggregationDisplay = '🏆 베스트';
+                break;
+            case 'sum':
+            default:
+                aggregationDisplay = '🔢 총합';
+                break;
+        }
+
+        let bodyContent = `> **상    태:** ${event.is_active ? '✅ 활성' : '❌ 비활성'}\n` +
+                         `> **점수타입:** ${getScoreTypeDisplay(event.score_type)}\n` +
+                         `> **순위기준:** ${event.sort_direction === 'desc' ? '높은순' : '낮은순'}\n` +
+                         `> **집계방식:** ${aggregationDisplay}\n` +
+                         `> **참가자수:** ${participants.length}명`;
+
+        // 상위 참가자 정보
+        let footerContent = '';
         if (participants.length > 0) {
-            const topParticipants = participants.slice(0, 5);
+            const topParticipants = participants.slice(0, 3);
             const participantText = topParticipants.map((participant, index) => {
                 const rankEmoji = getRankEmoji(index + 1);
-                const score = formatScore(participant.total_score, event.score_type);
+                // 순위와 동일한 계산된 점수 사용
+                const displayScore = participant.calculated_score !== undefined ? 
+                    participant.calculated_score : participant.total_score;
+                const score = formatScore(displayScore, event.score_type);
                 return `${rankEmoji} ${participant.display_name} - ${score}`;
             }).join('\n');
 
-            participantContent += `### 🏆 상위 참가자 (${Math.min(5, participants.length)}명)\n${participantText}\n\n`;
-
-            if (participants.length > 5) {
-                participantContent += `### 📋 전체 순위\n\`/랭킹 이벤트:${event.id}\` 명령어로 전체 순위를 확인하세요\n\n`;
+            footerContent = `🏆 **상위 참가자:**\n${participantText}`;
+            
+            if (participants.length > 3) {
+                footerContent += `\n\n📋 전체 순위는 \`/순위 이벤트:${event.event_name}\` 명령어로 확인하세요`;
             }
-
-            // Calculate statistics
-            const totalScore = participants.reduce((sum, p) => sum + parseFloat(p.total_score), 0);
-            const avgScore = totalScore / participants.length;
-            const totalEntries = participants.reduce((sum, p) => sum + p.entries_count, 0);
-
-            statsContent = `### 📈 통계\n평균 점수: ${formatScore(avgScore, event.score_type)}\n총 기록 수: ${totalEntries}회`;
-        }
-
-        const section = new SectionBuilder()
-            .setThumbnailAccessory(
-                new ThumbnailBuilder().setURL('https://harmari.duckdns.org/static/alarm.png')
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(headerContent)
-            );
-
-        if (participantContent.trim()) {
-            section.addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(participantContent.trim())
-            );
-        }
-
-        if (statsContent.trim()) {
-            section.addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(statsContent)
-            );
+        } else {
+            footerContent = '👥 아직 참가자가 없습니다';
         }
 
         const container = new ContainerBuilder()
-            .addSectionComponents(section)
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(headContent)
+            )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`*<t:${Math.floor(Date.now() / 1000)}:R>*`)
+                new TextDisplayBuilder().setContent(bodyContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(footerContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(`*EVENT_ID: ${event.id} • <t:${Math.floor(new Date(event.created_at).getTime() / 1000)}:R> 생성*`)
             );
 
         await interaction.reply({ 

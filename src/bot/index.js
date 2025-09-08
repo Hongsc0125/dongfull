@@ -167,10 +167,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
         } catch (error) {
             console.error('Error handling modal submit:', error);
             
-            const errorMessage = '모달 처리 중 오류가 발생했습니다.';
-            
-            if (!interaction.replied) {
-                await interaction.reply({ content: errorMessage, flags: 64 });
+            try {
+                const errorMessage = '❌ 모달 처리 중 오류가 발생했습니다.';
+                
+                if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply({ 
+                        content: errorMessage, 
+                        flags: MessageFlags.Ephemeral 
+                    });
+                } else {
+                    console.warn('Cannot reply to modal interaction - already handled');
+                }
+            } catch (replyError) {
+                console.error('Error replying to modal interaction:', replyError);
+                // 응답할 수 없는 경우 무시
             }
         }
     } else if (interaction.isAutocomplete()) {

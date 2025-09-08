@@ -54,7 +54,7 @@ export async function handleAddScore(interaction) {
             });
         }
 
-        // DB에서 멤버 가져오기 (훨씬 빠르고 안정적!)
+        // DB에서 멤버 가져오기
         const guild = interaction.guild;
         let userOptions;
         
@@ -64,7 +64,7 @@ export async function handleAddScore(interaction) {
             
             if (dbMembers.length === 0) {
                 return await interaction.editReply({
-                    content: '❌ DB에 등록된 사용자가 없습니다. 잠시 후 다시 시도해주세요.\n(스케줄러가 곧 멤버 정보를 동기화합니다)'
+                    content: '❌ DB에 등록된 사용자가 없습니다. 잠시 후 다시 시도해 주세요.\n(스케줄러가 곧 멤버 정보를 동기화합니다)'
                 });
             }
 
@@ -112,19 +112,19 @@ export async function handleAddScore(interaction) {
 
         const userRow = new ActionRowBuilder().addComponents(userSelect);
 
-        // DM용 embed 생성
+        // embed 생성
         const embed = {
             color: 0x3498db,
-            title: `📊 점수 추가 - ${event.event_name}`,
+            title: `📊 점수 추가 - ${event.event_name}\n`+`> ${event.description}`,
             fields: [
                 {
                     name: '🎯 이벤트 정보',
-                    value: `**📝 이벤트명:** ${event.event_name}\n**📊 점수 타입:** ${getScoreTypeDisplay(event.score_type)}\n**🔄 정렬 방식:** ${event.sort_direction === 'desc' ? '높은 점수부터' : '낮은 점수부터'}`,
+                    value: `> **점수:** ${getScoreTypeDisplay(event.score_type)}\n> **순위:** ${event.sort_direction === 'desc' ? '높은 점수부터' : '낮은 점수부터'}`,
                     inline: false
                 },
                 {
                     name: '📋 사용 방법',
-                    value: '아래 드롭다운에서 사용자를 선택하면 자동으로 점수 입력 모달이 표시됩니다.',
+                    value: '> 아래에서 사용자를 선택하면 자동으로 점수 입력 창이 표시됩니다.',
                     inline: false
                 }
             ],
@@ -135,13 +135,13 @@ export async function handleAddScore(interaction) {
             timestamp: new Date().toISOString()
         };
 
-        if (event.description) {
-            embed.fields.push({
-                name: '📄 이벤트 설명',
-                value: event.description,
-                inline: false
-            });
-        }
+        // if (event.description) {
+        //     embed.fields.push({
+        //         name: '📄 이벤트 설명',
+        //         value: event.description,
+        //         inline: false
+        //     });
+        // }
 
         // Ephemeral 메시지로 전송 (개인적으로만 보임)
         await interaction.editReply({ 
@@ -365,9 +365,15 @@ export async function handleScoreInputButton(interaction) {
 export async function handleScoreModal(interaction) {
     const [, , eventId, selectedUserId] = interaction.customId.split('-');
     
+    // 처리 시간이 길 수 있으므로 defer 처리
+    try {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    } catch (deferError) {
+        console.error('Error deferring modal interaction:', deferError);
+    }
+    
     try {
         const event = await getEventById(parseInt(eventId));
-        // 모달은 DM에서 실행될 수 있으므로 event.guild_id로 길드 찾기
         const guild = interaction.guild || interaction.client.guilds.cache.get(event.guild_id);
         const selectedUser = await guild.members.fetch(selectedUserId);
         const note = interaction.fields.getTextInputValue('note') || null;
@@ -380,18 +386,16 @@ export async function handleScoreModal(interaction) {
             score = minutes * 60 + seconds;
             
             if (score <= 0) {
-                return await interaction.reply({
-                    content: '❌ 시간은 0보다 커야 합니다.',
-                    flags: MessageFlags.Ephemeral
+                return await interaction.editReply({
+                    content: '❌ 시간은 0보다 커야 합니다.'
                 });
             }
         } else {
             score = parseFloat(interaction.fields.getTextInputValue('score'));
             
             if (isNaN(score)) {
-                return await interaction.reply({
-                    content: '❌ 올바른 점수를 입력하세요.',
-                    flags: MessageFlags.Ephemeral
+                return await interaction.editReply({
+                    content: '❌ 올바른 점수를 입력하세요.'
                 });
             }
         }
@@ -407,9 +411,8 @@ export async function handleScoreModal(interaction) {
 
         const participant = await getParticipant(parseInt(eventId), selectedUser.id);
         if (!participant) {
-            return await interaction.reply({
-                content: '❌ 참가자 정보를 가져올 수 없습니다.',
-                flags: MessageFlags.Ephemeral
+            return await interaction.editReply({
+                content: '❌ 참가자 정보를 가져올 수 없습니다.'
             });
         }
 
@@ -422,13 +425,13 @@ export async function handleScoreModal(interaction) {
 
         // 집계 방식에 따른 현재 점수 계산
         let displayScore = updatedParticipant.total_score;
-        let scoreLabel = '🏆 총 점수';
+        let scoreLabel = '🏆 총합 점수 🏆';
         
         switch (event.score_aggregation) {
             case 'average':
                 displayScore = updatedParticipant.entries_count > 0 ? 
                     updatedParticipant.total_score / updatedParticipant.entries_count : 0;
-                scoreLabel = '📊 평균 점수';
+                scoreLabel = '🏆 평균 점수 🏆';
                 break;
             case 'best':
                 // 베스트 점수는 별도 쿼리 필요하지만 간단히 처리
@@ -440,30 +443,38 @@ export async function handleScoreModal(interaction) {
                     WHERE participant_id = $1
                 `, [participant.id]);
                 displayScore = bestResult.rows[0]?.best_score || score;
-                scoreLabel = '🏆 베스트 점수';
+                scoreLabel = '🏆 베스트 점수 🏆';
                 break;
             case 'sum':
             default:
-                scoreLabel = '🔢 총합 점수';
+                scoreLabel = '🏆 총합 점수 🏆';
                 break;
         }
 
-        // 성공 메시지 Components v2 UI 생성
-        let successContent = `## ✅ 점수가 추가되었습니다!\n\n` +
-                           `### 🎯 이벤트: ${event.event_name}\n` +
-                           `### 👤 참가자: ${selectedUser.displayName} (@${selectedUser.user.username})\n` +
-                           `### 📊 추가된 점수: ${formatScore(score, event.score_type)}\n` +
-                           `### ${scoreLabel}: ${formatScore(displayScore, event.score_type)}\n` +
-                           `### 📈 참가 횟수: ${updatedParticipant.entries_count}회\n` +
-                           `### 🎲 집계 방식: ${getAggregationDisplay(event.score_aggregation)}`;
+        // 성공 메시지 Components v2 UI 생성 (이벤트 생성과 비슷한 스타일)
+        let headContent = `## ✅ ${selectedUser.displayName}님에게 점수가 추가되었습니다!\n`;
+
+        headContent += `### ${scoreLabel} (${event.event_name})\n`;
+        headContent += `## ${formatScore(displayScore, event.score_type)}\n`;
+
+
+        let bodyContent = `> **설    명:** ${event.description}\n` +
+                         `> **추가점수:** ${formatScore(score, event.score_type)}\n` +
+                         `> **참가횟수:** ${updatedParticipant.entries_count}회`;
 
         if (note) {
-            successContent += `\n\n### 📝 메모: ${note}`;
+            bodyContent += `\n> **메모:** ${note}`;
         }
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(successContent)
+                new TextDisplayBuilder().setContent(headContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(bodyContent)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
@@ -472,19 +483,28 @@ export async function handleScoreModal(interaction) {
                 new TextDisplayBuilder().setContent(`*기록자: ${interaction.user.tag} • <t:${Math.floor(Date.now() / 1000)}:R>*`)
             );
 
-        await interaction.reply({ 
-            components: [container],
-            flags: MessageFlags.IsComponentsV2
-        });
+        // 안전한 인터랙션 응답 (defer 했으므로 editReply 사용)
+        try {
+            await interaction.editReply({ 
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
+        } catch (replyError) {
+            console.error('Error editing reply:', replyError);
+            // 응답 실패 시 무시
+        }
 
     } catch (error) {
         console.error('Error processing score modal:', error);
         
-        if (!interaction.replied) {
-            await interaction.reply({
-                content: '❌ 점수 추가 처리 중 오류가 발생했습니다.',
-                flags: MessageFlags.Ephemeral
+        try {
+            // defer 했으므로 editReply 사용
+            await interaction.editReply({
+                content: '❌ 점수 추가 처리 중 오류가 발생했습니다.'
             });
+        } catch (errorReplyError) {
+            console.error('Error editing error reply:', errorReplyError);
+            // 최종적으로 응답할 수 없는 경우 무시
         }
     }
 }
@@ -492,21 +512,12 @@ export async function handleScoreModal(interaction) {
 
 function getScoreTypeDisplay(scoreType) {
     const types = {
-        'points': '📈 포인트',
-        'time_seconds': '⏱️ 시간 (초)',
-        'time_minutes': '⏰ 시간 (분)'
+        'points': '포인트',
+        'time_seconds': '시간'
     };
     return types[scoreType] || types['points'];
 }
 
-function getAggregationDisplay(aggregation) {
-    const aggregations = {
-        'sum': '🔢 합산',
-        'average': '📊 평균',
-        'best': '🏆 베스트'
-    };
-    return aggregations[aggregation] || aggregations['sum'];
-}
 
 
 // 사용자 검색 모달 표시
@@ -625,7 +636,7 @@ export async function handleUserSearchResult(interaction) {
             .addFields([
                 {
                     name: '📊 이벤트',
-                    value: `${event.event_name} (${event.score_type})`,
+                    value: `${event.event_name}`,
                     inline: true
                 },
                 {

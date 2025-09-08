@@ -14,16 +14,31 @@ export async function handleEventList(interaction) {
         const events = await getEvents(interaction.guildId);
 
         if (events.length === 0) {
-            const section = new SectionBuilder()
-                .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`## 📋 이벤트 목록`)
-                )
-                .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('생성된 이벤트가 없습니다.\n\n### 🆕 이벤트 생성\n`/이벤트생성` 명령어로 새 이벤트를 만들어보세요!')
-                );
+            let headContent = `## 📋 ${interaction.guild.name} 이벤트 목록!\n`;
+            
+            let bodyContent = `> **총 이벤트:** 0개\n` +
+                             `> **활성이벤트:** 0개\n` +
+                             `> **비활성이벤트:** 0개`;
+
+            let footerContent = `📝 **이벤트를 생성해보세요!**\n` +
+                               `\`/이벤트생성\` 명령어로 새로운 이벤트를 만들 수 있습니다`;
 
             const container = new ContainerBuilder()
-                .addSectionComponents(section)
+                .addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(headContent)
+                )
+                .addSeparatorComponents(
+                    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+                )
+                .addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(bodyContent)
+                )
+                .addSeparatorComponents(
+                    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+                )
+                .addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(footerContent)
+                )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
@@ -41,51 +56,62 @@ export async function handleEventList(interaction) {
         const activeEvents = events.filter(event => event.is_active);
         const inactiveEvents = events.filter(event => !event.is_active);
 
-        const section = new SectionBuilder()
-            .setThumbnailAccessory(
-                new ThumbnailBuilder().setURL('https://harmari.duckdns.org/static/alarm.png')
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`## 📋 ${interaction.guild.name}의 이벤트 목록`)
-            )
-            .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`총 ${events.length}개의 이벤트`)
-            );
+        // 선호하는 깔끔한 디자인으로 구성
+        let headContent = `## 📋 ${interaction.guild.name} 이벤트 목록!\n`;
 
+        let bodyContent = `> **총 이벤트:** ${events.length}개\n` +
+                         `> **활성이벤트:** ${activeEvents.length}개\n` +
+                         `> **비활성이벤트:** ${inactiveEvents.length}개`;
+
+        // 이벤트 목록
         let eventListContent = '';
-
+        
         if (activeEvents.length > 0) {
-            const activeText = activeEvents.slice(0, 10).map(event => {
+            const activeText = activeEvents.slice(0, 8).map(event => {
                 const scoreType = getScoreTypeDisplay(event.score_type);
-                const createdDate = new Date(event.created_at).toLocaleDateString('ko-KR');
-                return `**${event.event_name}** (ID: ${event.id})\n${scoreType} • ${createdDate}`;
-            }).join('\n\n');
+                const aggregation = getAggregationDisplay(event.score_aggregation);
+                return `✅ **${event.event_name}** (ID: ${event.id})\n   ${scoreType} • ${aggregation}`;
+            }).join('\n');
 
-            eventListContent += `### ✅ 활성 이벤트 (${activeEvents.length}개)\n${activeText}\n\n`;
+            eventListContent += `📌 **활성 이벤트**\n${activeText}`;
         }
 
         if (inactiveEvents.length > 0) {
-            const inactiveText = inactiveEvents.slice(0, 5).map(event => {
+            const inactiveText = inactiveEvents.slice(0, 4).map(event => {
                 const scoreType = getScoreTypeDisplay(event.score_type);
-                const createdDate = new Date(event.created_at).toLocaleDateString('ko-KR');
-                return `~~${event.event_name}~~ (ID: ${event.id})\n${scoreType} • ${createdDate}`;
-            }).join('\n\n');
+                const aggregation = getAggregationDisplay(event.score_aggregation);
+                return `❌ ~~${event.event_name}~~ (ID: ${event.id})\n   ${scoreType} • ${aggregation}`;
+            }).join('\n');
 
-            eventListContent += `### ❌ 비활성 이벤트 (${inactiveEvents.length}개)\n${inactiveText}\n\n`;
+            if (eventListContent) eventListContent += '\n\n';
+            eventListContent += `🔒 **비활성 이벤트**\n${inactiveText}`;
         }
 
-        eventListContent += `### 🔧 사용 가능한 명령어\n` +
-                           `• \`/이벤트정보\` - 이벤트 상세 정보\n` +
-                           `• \`/랭킹\` - 리더보드 확인\n` +
-                           `• \`/점수추가\` - 점수 추가 (관리자)\n` +
-                           `• \`/이벤트토글\` - 이벤트 활성화/비활성화 (관리자)`;
-
-        section.addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(eventListContent)
-        );
+        let footerContent = '💡 **명령어 안내**\n' +
+                           '`/이벤트정보` `/순위` `/점수추가` `/이벤트토글`';
 
         const container = new ContainerBuilder()
-            .addSectionComponents(section)
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(headContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(bodyContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(eventListContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(footerContent)
+            )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
@@ -110,8 +136,17 @@ export async function handleEventList(interaction) {
 function getScoreTypeDisplay(scoreType) {
     const types = {
         'points': '📈 포인트',
-        'time_seconds': '⏱️ 시간 (초)',
+        'time_seconds': '⏱️ 시간',
         'time_minutes': '⏰ 시간 (분)'
     };
     return types[scoreType] || types['points'];
+}
+
+function getAggregationDisplay(aggregation) {
+    const aggregations = {
+        'sum': '🔢 총합',
+        'average': '📊 평균', 
+        'best': '🏆 베스트'
+    };
+    return aggregations[aggregation] || aggregations['sum'];
 }

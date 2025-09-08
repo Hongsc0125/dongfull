@@ -154,26 +154,31 @@ export async function handleCreateEventModal(interaction) {
         );
 
         // Components v2 UI 생성
-        let fullContent = `## 🎉 새 이벤트가 생성되었습니다!\n\n` +
-                         `### 📝 이벤트명: ${eventName}\n` +
-                         `### 📊 점수 타입: ${getScoreTypeDisplay(scoreType)}\n` +
-                         `### 🆔 이벤트 ID: ${event.id}\n` +
-                         `### 🔄 정렬방식: ${event.sort_direction === 'desc' ? '내림차순 (높은 점수부터)' : '오름차순 (낮은 점수부터)'}\n` +
-                         `### 📈 집계방식: ${getAggregationDisplay(scoreAggregation)}`;
+        let headContent = `## 🎉 이벤트 ${eventName} 생성되었습니다!\n`;
 
         if (description) {
-            fullContent += `\n\n### 📄 설명: ${description}`;
+            headContent += `### ${description}`;
         }
+
+        let bodyContent = `> 점수 : ${getScoreTypeDisplay(scoreType)}\n` +
+                          `> 순위 : ${event.sort_direction === 'desc' ? '높은점수' : '낮은점수'}\n` +
+                          `> 집계 : ${getAggregationDisplay(scoreAggregation)}`;
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(fullContent)
+                new TextDisplayBuilder().setContent(headContent)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`*생성자: ${interaction.user.tag} • <t:${Math.floor(Date.now() / 1000)}:R>*`)
+                new TextDisplayBuilder().setContent(bodyContent)
+            )
+            .addSeparatorComponents(
+                new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+            )
+            .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(`*EVENT_ID: ${event.id} / 생성자: ${interaction.user.tag} • <t:${Math.floor(Date.now() / 1000)}:R>*`)
             );
 
         await interaction.reply({ 
@@ -195,18 +200,17 @@ export async function handleCreateEventModal(interaction) {
 
 function getScoreTypeDisplay(scoreType) {
     const types = {
-        'points': '📈 포인트',
-        'time_seconds': '⏱️ 시간 (초)',
-        'time_minutes': '⏰ 시간 (분)'
+        'points': '포인트',
+        'time_seconds': '시간'
     };
     return types[scoreType] || types['points'];
 }
 
 function getAggregationDisplay(aggregation) {
     const aggregations = {
-        'sum': '🔢 합산 (여러 기록의 점수를 모두 더함)',
-        'average': '📊 평균 (여러 기록의 점수 평균값)',
-        'best': '🏆 베스트 (여러 기록 중 최고 점수만 반영)'
+        'sum': '합산',
+        'average': '평균',
+        'best': '베스트'
     };
     return aggregations[aggregation] || aggregations['sum'];
 }
