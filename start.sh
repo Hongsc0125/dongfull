@@ -8,16 +8,12 @@ echo "📝 기존 프로세스 확인 중..."
 pkill -f "node src/server/index.js" 2>/dev/null || true
 pkill -f "next dev" 2>/dev/null || true
 
-# 의존성 확인
-if [ ! -d "node_modules" ]; then
-    echo "📦 루트 의존성 설치 중..."
-    npm install
-fi
+# 의존성 설치 (항상 실행)
+echo "📦 루트 의존성 설치 중..."
+npm install
 
-if [ ! -d "client/node_modules" ]; then
-    echo "📦 클라이언트 의존성 설치 중..."
-    cd client && npm install && cd ..
-fi
+echo "📦 클라이언트 의존성 설치 중..."
+cd client && npm install && cd ..
 
 # 로그 디렉토리 생성
 mkdir -p logs
