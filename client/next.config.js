@@ -17,6 +17,10 @@ const nextConfig = {
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     BACKEND_URL: process.env.BACKEND_URL,
   },
+  // Cross-origin 경고 해결
+  experimental: {
+    allowedDevOrigins: ['evt-board.com'],
+  },
 }
 
 module.exports = nextConfig

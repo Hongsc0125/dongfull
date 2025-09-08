@@ -22,12 +22,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string
-      session.user.discordId = token.discordId as string
+      if (token.accessToken) {
+        session.accessToken = token.accessToken as string
+      }
+      if (token.discordId) {
+        session.user.discordId = token.discordId as string
+      }
       return session
+    },
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
     },
   },
   pages: {
     signIn: '/auth/signin',
   },
+  debug: process.env.NODE_ENV === 'development',
 })
