@@ -79,7 +79,7 @@ export function CreateEventForm({ guildId, creatorId }: CreateEventFormProps) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        logger.error(`API Error: ${response.status}`, { errorData })
+        logger.error(`API Error: ${response.status}`, undefined, { errorData })
         throw new Error(errorData.error || 'Failed to create event')
       }
 
