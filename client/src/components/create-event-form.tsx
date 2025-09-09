@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Plus, Target, Clock, TrendingUp, TrendingDown, BarChart3, Activity, Star } from 'lucide-react'
+import { useLogger } from '@/utils/logger'
 
 interface CreateEventFormProps {
   guildId: string
@@ -18,6 +19,7 @@ interface CreateEventFormProps {
 
 export function CreateEventForm({ guildId, creatorId }: CreateEventFormProps) {
   const router = useRouter()
+  const logger = useLogger('CreateEventForm')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -31,47 +33,63 @@ export function CreateEventForm({ guildId, creatorId }: CreateEventFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    logger.formSubmit('create-event', { guildId, formData })
+    
     if (!formData.eventName.trim()) {
       setError('이벤트 제목을 입력해주세요.')
+      logger.warn('Validation failed: Empty event name')
       return
     }
 
     if (!formData.description.trim()) {
       setError('이벤트 설명을 입력해주세요.')
+      logger.warn('Validation failed: Empty description')
       return
     }
 
     setIsLoading(true)
     setError('')
 
+    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/events`
+    const requestData = {
+      guildId,
+      eventName: formData.eventName.trim(),
+      description: formData.description.trim(),
+      scoreType: formData.scoreType,
+      creatorId,
+      sortDirection: formData.sortDirection,
+      scoreAggregation: formData.scoreAggregation
+    }
+
+    logger.info(`Sending create event request to ${apiUrl}`, { requestData })
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/events`, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          guildId,
-          eventName: formData.eventName.trim(),
-          description: formData.description.trim(),
-          scoreType: formData.scoreType,
-          creatorId,
-          sortDirection: formData.sortDirection,
-          scoreAggregation: formData.scoreAggregation
-        })
+        body: JSON.stringify(requestData)
+      })
+
+      logger.info(`API Response: ${response.status} ${response.statusText}`, {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries())
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        logger.error(`API Error: ${response.status}`, { errorData })
         throw new Error(errorData.error || 'Failed to create event')
       }
 
       const event = await response.json()
+      logger.success('Event created successfully', { event })
       
       // 성공시 길드 페이지로 리다이렉트
       router.push(`/guild/${guildId}`)
     } catch (error) {
-      console.error('Error creating event:', error)
+      logger.error('Error creating event', error as Error, { apiUrl, requestData })
       setError(error instanceof Error ? error.message : '이벤트 생성 중 오류가 발생했습니다.')
     } finally {
       setIsLoading(false)
