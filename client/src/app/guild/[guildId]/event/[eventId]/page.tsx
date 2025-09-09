@@ -82,8 +82,7 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
 
 async function getEventInfo(eventId: string): Promise<Event | null> {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3777'
-    const response = await fetch(`${baseUrl}/api/event/${eventId}`, {
+    const response = await fetch(`http://localhost:3001/api/event/${eventId}`, {
       cache: 'no-store'
     })
     if (!response.ok) return null
@@ -95,8 +94,7 @@ async function getEventInfo(eventId: string): Promise<Event | null> {
 
 async function getLeaderboard(eventId: string): Promise<Participant[]> {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3777'
-    const response = await fetch(`${baseUrl}/api/leaderboard/${eventId}`, {
+    const response = await fetch(`http://localhost:3001/api/leaderboard/${eventId}`, {
       cache: 'no-store'
     })
     if (!response.ok) return []
@@ -190,6 +188,9 @@ export default async function EventDetailPage({
     getLeaderboard(resolvedParams.eventId)
   ])
 
+  console.log('Event data:', event)
+  console.log('Leaderboard data:', leaderboard)
+
   if (!guild || !event) {
     notFound()
   }
@@ -248,7 +249,7 @@ export default async function EventDetailPage({
               </div>
             </div>
             
-            {userIsAdmin && (
+            {userIsAdmin && event && (
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex gap-2">
                   <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} />

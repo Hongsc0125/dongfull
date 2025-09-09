@@ -64,8 +64,7 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
 
 async function getGuildEvents(guildId: string): Promise<Event[]> {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001'
-    const response = await fetch(`${backendUrl}/api/events/${guildId}`, {
+    const response = await fetch(`http://localhost:3001/api/events/${guildId}`, {
       cache: 'no-store'
     })
     if (!response.ok) throw new Error('Failed to fetch events')
@@ -78,8 +77,7 @@ async function getGuildEvents(guildId: string): Promise<Event[]> {
 
 async function getEventParticipants(eventId: number): Promise<number> {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3777'
-    const response = await fetch(`${baseUrl}/api/leaderboard/${eventId}`, {
+    const response = await fetch(`http://localhost:3001/api/leaderboard/${eventId}`, {
       cache: 'no-store'
     })
     if (!response.ok) return 0
