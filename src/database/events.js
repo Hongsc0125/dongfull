@@ -86,6 +86,22 @@ export async function updateEvent(eventId, updates) {
     }
 }
 
+export async function updateEventStatus(eventId, isActive) {
+    try {
+        const result = await db.query(`
+            UPDATE events 
+            SET is_active = $2, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING *
+        `, [eventId, isActive]);
+
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error updating event status:', error);
+        throw error;
+    }
+}
+
 export async function deleteEvent(eventId) {
     try {
         const result = await db.query(`
