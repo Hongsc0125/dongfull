@@ -20,11 +20,14 @@ mkdir -p logs
 
 echo "🎯 서비스 시작 중..."
 
+# PID 파일 초기화
+> logs/all.pid
+
 # 1. Express API 서버 (백엔드 + 봇)
 echo "🤖 Discord 봇 및 API 서버 시작 중... (포트 3001)"
 nohup npm run server:dev > logs/backend.log 2>&1 &
 BACKEND_PID=$!
-echo $BACKEND_PID > logs/backend.pid
+echo "backend:$BACKEND_PID" >> logs/all.pid
 
 # 서버 시작 대기
 echo "⏳ API 서버 시작 대기 중..."
@@ -35,7 +38,7 @@ echo "🌐 웹 앱 시작 중... (포트 3777)"
 cd client
 nohup npm run dev > ../logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
-echo $FRONTEND_PID > ../logs/frontend.pid
+echo "frontend:$FRONTEND_PID" >> ../logs/all.pid
 cd ..
 
 echo "✅ Event Board가 시작되었습니다!"
