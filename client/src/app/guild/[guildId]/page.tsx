@@ -155,13 +155,22 @@ export default async function GuildPage({ params }: { params: Promise<{ guildId:
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center justify-between mb-8">
           <Link href="/dashboard">
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               대시보드로 돌아가기
             </Button>
           </Link>
+          
+          {isAdmin(guild) && (
+            <Link href={`/guild/${resolvedParams.guildId}/create-event`}>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                새 이벤트 생성
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Guild Info */}

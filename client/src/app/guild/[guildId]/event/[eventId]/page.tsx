@@ -19,7 +19,8 @@ import { auth } from "../../../../../../auth"
 import { redirect } from "next/navigation"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ScoreManagement } from "@/components/score-management"
+import { EnhancedScoreManagement } from "@/components/enhanced-score-management"
+import { EventToggle } from "@/components/event-toggle"
 
 interface Event {
   id: number
@@ -248,11 +249,11 @@ export default async function EventDetailPage({
             </div>
             
             {userIsAdmin && (
-              <div className="flex gap-2">
-                <ScoreManagement event={event} userIsAdmin={userIsAdmin} />
-                <Button variant="outline" disabled>
-                  이벤트 관리
-                </Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
+                  <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} />
+                  <EventToggle event={event} userIsAdmin={userIsAdmin} />
+                </div>
               </div>
             )}
           </div>

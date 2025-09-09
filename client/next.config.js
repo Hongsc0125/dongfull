@@ -16,6 +16,7 @@ const nextConfig = {
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     BACKEND_URL: process.env.BACKEND_URL,
+    NEXT_PUBLIC_BACKEND_URL: process.env.BACKEND_URL,
   },
   // Cross-origin 경고 해결
   experimental: {

@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   Dialog,
   DialogContent,
@@ -13,14 +15,23 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog"
-import { Plus, User, Trophy, Clock, Target, AlertCircle } from "lucide-react"
+import { Plus, User, Trophy, Clock, Target, AlertCircle, Search, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface Event {
   id: number
   event_name: string
+  guild_id: string
   score_type: 'points' | 'time_seconds'
   is_active: boolean
+}
+
+interface GuildMember {
+  user_id: string
+  username: string
+  display_name: string
+  is_bot: boolean
+  avatar_url?: string
 }
 
 interface ScoreManagementProps {
