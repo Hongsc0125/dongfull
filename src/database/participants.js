@@ -87,7 +87,7 @@ export async function updateParticipantScore(participantId, scoreChange, addedBy
     }
 }
 
-export async function getLeaderboard(eventId, limit = 10) {
+export async function getLeaderboard(eventId, limit = 999) {
     try {
         // 이벤트 정보를 가져와서 집계 방식과 정렬 방향 확인
         const eventResult = await db.query(`
