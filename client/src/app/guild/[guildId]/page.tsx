@@ -271,7 +271,7 @@ export default async function GuildPage({ params }: { params: Promise<{ guildId:
                   const AggIcon = aggregation.icon
 
                   return (
-                    <Link key={event.id} href={`/guild/${params.guildId}/event/${event.id}`}>
+                    <Link key={event.id} href={`/guild/${resolvedParams.guildId}/event/${event.id}`}>
                       <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-green-500">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
@@ -340,7 +340,7 @@ export default async function GuildPage({ params }: { params: Promise<{ guildId:
                   const AggIcon = aggregation.icon
 
                   return (
-                    <Link key={event.id} href={`/guild/${params.guildId}/event/${event.id}`}>
+                    <Link key={event.id} href={`/guild/${resolvedParams.guildId}/event/${event.id}`}>
                       <Card className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-red-500 opacity-75">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
