@@ -82,8 +82,8 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
 
 async function getEventInfo(eventId: string): Promise<Event | null> {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001'
-    const response = await fetch(`${backendUrl}/api/event/${eventId}`, {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3777'
+    const response = await fetch(`${baseUrl}/api/event/${eventId}`, {
       cache: 'no-store'
     })
     if (!response.ok) return null
@@ -95,8 +95,8 @@ async function getEventInfo(eventId: string): Promise<Event | null> {
 
 async function getLeaderboard(eventId: string): Promise<Participant[]> {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001'
-    const response = await fetch(`${backendUrl}/api/leaderboard/${eventId}`, {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3777'
+    const response = await fetch(`${baseUrl}/api/leaderboard/${eventId}`, {
       cache: 'no-store'
     })
     if (!response.ok) return []

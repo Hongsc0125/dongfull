@@ -1,0 +1,33 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
+) {
+  try {
+    const { eventId } = await params;
+    const url = new URL(request.url);
+    const limit = url.searchParams.get('limit') || '999';
+    
+    // 백엔드 서버로 요청 프록시
+    const response = await fetch(`http://localhost:3001/api/leaderboard/${eventId}?limit=${limit}`, {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: 'Leaderboard not found' }, 
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('API Proxy Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
