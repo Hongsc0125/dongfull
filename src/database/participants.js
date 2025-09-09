@@ -67,16 +67,40 @@ export async function updateParticipantScore(participantId, scoreChange, addedBy
             VALUES ($1, $2, $3, $4)
         `, [participantId, scoreChange, note, addedBy]);
 
-        // Update participant total score and entries count
-        const result = await db.query(`
-            UPDATE participants 
-            SET 
-                total_score = total_score + $2,
-                entries_count = entries_count + 1,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1
-            RETURNING *
-        `, [participantId, scoreChange]);
+        // Get event aggregation method to determine if we should update total_score
+        const eventResult = await db.query(`
+            SELECT e.score_aggregation
+            FROM events e
+            JOIN participants p ON e.id = p.event_id
+            WHERE p.id = $1
+        `, [participantId]);
+        
+        const aggregation = eventResult.rows[0]?.score_aggregation || 'sum';
+
+        // Update participant based on aggregation method
+        let result;
+        if (aggregation === 'best') {
+            // For 'best' method, don't update total_score, only increment entries_count
+            result = await db.query(`
+                UPDATE participants 
+                SET 
+                    entries_count = entries_count + 1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+                RETURNING *
+            `, [participantId]);
+        } else {
+            // For 'sum' and 'average' methods, update total_score
+            result = await db.query(`
+                UPDATE participants 
+                SET 
+                    total_score = total_score + $2,
+                    entries_count = entries_count + 1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+                RETURNING *
+            `, [participantId, scoreChange]);
+        }
 
         await db.query('COMMIT');
         return result.rows[0];
@@ -103,7 +127,6 @@ export async function getLeaderboard(eventId, limit = 999) {
         const { score_aggregation, sort_direction } = eventResult.rows[0];
         
         let scoreQuery = '';
-        let orderBy = '';
         
         // 집계 방식에 따라 쿼리 변경
         switch (score_aggregation) {
