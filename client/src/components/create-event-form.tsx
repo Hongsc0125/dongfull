@@ -50,7 +50,7 @@ export function CreateEventForm({ guildId, creatorId }: CreateEventFormProps) {
     setIsLoading(true)
     setError('')
 
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/events`
+    const apiUrl = '/api/events'
     const requestData = {
       guildId,
       eventName: formData.eventName.trim(),

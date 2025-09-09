@@ -93,7 +93,7 @@ export default async function CreateEventPage({
             <CardContent>
               <CreateEventForm 
                 guildId={resolvedParams.guildId} 
-                creatorId={session.user?.id || ''} 
+                creatorId={session.user?.discordId || ''} 
               />
             </CardContent>
           </Card>
