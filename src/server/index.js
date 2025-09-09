@@ -8,6 +8,8 @@ import { getLeaderboard, addParticipant, getParticipant, updateParticipantScore 
 import { registerGuild } from '../database/guilds.js';
 import { getGuildMembers, searchGuildMembers } from '../database/guild-members.js';
 import { client } from '../bot/index.js';
+import { apiLogger } from '../utils/logger.js';
+import logsRouter from './routes/logs.js';
 
 dotenv.config();
 
@@ -17,6 +19,34 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// 로그 라우터 추가
+app.use('/api/logs', logsRouter);
+
+// API 요청 로깅 미들웨어
+app.use((req, res, next) => {
+    const start = Date.now();
+    
+    apiLogger.info(`${req.method} ${req.path}`, {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        query: req.query,
+        body: req.method !== 'GET' ? req.body : undefined
+    });
+
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const level = res.statusCode >= 400 ? 'error' : 'info';
+        
+        apiLogger[level](`${req.method} ${req.path} ${res.statusCode}`, {
+            duration: `${duration}ms`,
+            status: res.statusCode,
+            ip: req.ip
+        });
+    });
+
+    next();
+});
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -39,7 +69,7 @@ app.get('/api/events/:guildId', async (req, res) => {
         const events = await getEvents(guildId);
         res.json(events);
     } catch (error) {
-        console.error('Error fetching events:', error);
+        apiLogger.error('Error fetching events:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -55,7 +85,7 @@ app.get('/api/event/:eventId', async (req, res) => {
         
         res.json(event);
     } catch (error) {
-        console.error('Error fetching event:', error);
+        apiLogger.error('Error fetching event:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -68,7 +98,7 @@ app.get('/api/leaderboard/:eventId', async (req, res) => {
         const leaderboard = await getLeaderboard(parseInt(eventId), limit);
         res.json(leaderboard);
     } catch (error) {
-        console.error('Error fetching leaderboard:', error);
+        apiLogger.error('Error fetching leaderboard:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -128,7 +158,7 @@ app.post('/api/events', async (req, res) => {
 
         res.json(event);
     } catch (error) {
-        console.error('Error creating event:', error);
+        apiLogger.error('Error creating event:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -147,7 +177,7 @@ app.patch('/api/events/:eventId/toggle', async (req, res) => {
 
         res.json(event);
     } catch (error) {
-        console.error('Error updating event status:', error);
+        apiLogger.error('Error updating event status:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -167,7 +197,7 @@ app.get('/api/guild/:guildId/members', async (req, res) => {
 
         res.json(members);
     } catch (error) {
-        console.error('Error fetching guild members:', error);
+        apiLogger.error('Error fetching guild members:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -191,7 +221,7 @@ app.post('/api/participants/:participantId/score', async (req, res) => {
 
         res.json(participant);
     } catch (error) {
-        console.error('Error adding score:', error);
+        apiLogger.error('Error adding score:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -215,7 +245,7 @@ app.post('/api/participants', async (req, res) => {
 
         res.json(participant);
     } catch (error) {
-        console.error('Error adding participant:', error);
+        apiLogger.error('Error adding participant:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -233,13 +263,13 @@ app.get('/api/events/:eventId/participants/:userId', async (req, res) => {
 
         res.json(participant);
     } catch (error) {
-        console.error('Error fetching participant:', error);
+        apiLogger.error('Error fetching participant:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
+    apiLogger.error('Unhandled error:', err);
     res.status(500).json({ error: 'Internal server error' });
 });
 
@@ -248,10 +278,10 @@ async function startServer() {
         await initDatabase();
         
         app.listen(PORT, () => {
-            console.log(`🚀 API Server running on port ${PORT}`);
+            apiLogger.info(`🚀 API Server running on port ${PORT}`);
         });
     } catch (error) {
-        console.error('Failed to start server:', error);
+        apiLogger.error('Failed to start server:', error);
         process.exit(1);
     }
 }
