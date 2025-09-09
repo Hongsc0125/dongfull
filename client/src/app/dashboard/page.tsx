@@ -17,8 +17,14 @@ interface Guild {
 
 async function getUserGuilds(): Promise<Guild[]> {
   try {
+    const { headers } = await import('next/headers')
+    const headersList = headers()
+    
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        cookie: headersList.get('cookie') || '',
+      },
     })
     if (!response.ok) throw new Error('Failed to fetch guilds')
     return await response.json()
@@ -31,7 +37,15 @@ async function getUserGuilds(): Promise<Guild[]> {
 export default async function Dashboard() {
   const session = await auth()
 
-  if (!session) {
+  console.log('Dashboard session debug:', {
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    hasAccessToken: !!session?.accessToken,
+    userName: session?.user?.name,
+    userImage: session?.user?.image
+  })
+
+  if (!session || !session.user) {
     redirect('/')
   }
 
@@ -56,12 +70,12 @@ export default async function Dashboard() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={session.user.image || ''} />
-              <AvatarFallback>{session.user.name?.charAt(0) || 'U'}</AvatarFallback>
+              <AvatarImage src={session.user?.image || ''} />
+              <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                안녕하세요, {session.user.name}님!
+                안녕하세요, {session.user?.name || '사용자'}님!
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
                 Event Board 대시보드

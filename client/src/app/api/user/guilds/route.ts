@@ -5,8 +5,20 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     
+    console.log('Session debug:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      hasAccessToken: !!session?.accessToken,
+      sessionKeys: session ? Object.keys(session) : null,
+      userKeys: session?.user ? Object.keys(session.user) : null
+    })
+    
     if (!session?.accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('No access token found in session')
+      return NextResponse.json({ 
+        error: 'Unauthorized', 
+        debug: 'No access token in session' 
+      }, { status: 401 })
     }
 
     // Discord API로부터 사용자 길드 정보 가져오기
