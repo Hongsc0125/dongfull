@@ -39,7 +39,9 @@ export async function GET(request: NextRequest) {
     }
     
     // 백엔드 서버로 요청 프록시
-    const response = await fetch(`http://localhost:3001/api/events/${guildId}`);
+    const response = await fetch(`http://localhost:3001/api/events/${guildId}`, {
+      cache: 'no-store'
+    });
     const data = await response.json();
     
     if (!response.ok) {

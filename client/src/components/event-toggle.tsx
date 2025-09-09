@@ -44,7 +44,7 @@ export function EventToggle({ event, userIsAdmin }: EventToggleProps) {
     setError("")
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/events/${event.id}/toggle`, {
+      const response = await fetch(`/api/events/${event.id}/toggle`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

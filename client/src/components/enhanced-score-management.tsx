@@ -76,7 +76,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
   const loadMembers = async () => {
     setLoadingMembers(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/guild/${event.guild_id}/members?limit=50`)
+      const response = await fetch(`/api/guild/${event.guild_id}/members?limit=50`)
       if (response.ok) {
         const memberData = await response.json()
         setMembers(memberData.filter((m: GuildMember) => !m.is_bot))
@@ -96,7 +96,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
 
     setLoadingMembers(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/guild/${event.guild_id}/members?search=${encodeURIComponent(query)}&limit=20`)
+      const response = await fetch(`/api/guild/${event.guild_id}/members?search=${encodeURIComponent(query)}&limit=20`)
       if (response.ok) {
         const memberData = await response.json()
         setMembers(memberData.filter((m: GuildMember) => !m.is_bot))
@@ -152,7 +152,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
       }
 
       // 참가자 등록
-      const participantResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/participants`, {
+      const participantResponse = await fetch('/api/participants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
       const participant = await participantResponse.json()
 
       // 2. 점수 추가
-      const scoreResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/api/participants/${participant.id}/score`, {
+      const scoreResponse = await fetch(`/api/participants/${participant.id}/score`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -78,8 +78,8 @@ async function getGuildEvents(guildId: string): Promise<Event[]> {
 
 async function getEventParticipants(eventId: number): Promise<number> {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001'
-    const response = await fetch(`${backendUrl}/api/leaderboard/${eventId}`, {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3777'
+    const response = await fetch(`${baseUrl}/api/leaderboard/${eventId}`, {
       cache: 'no-store'
     })
     if (!response.ok) return 0
