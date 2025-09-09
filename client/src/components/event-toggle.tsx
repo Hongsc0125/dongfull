@@ -118,7 +118,7 @@ export function EventToggle({ event, userIsAdmin }: EventToggleProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch checked={!event.is_active} readOnly />
+                  <Switch checked={!event.is_active} disabled />
                   <span className="text-sm">
                     변경 후: {!event.is_active ? "활성" : "비활성"}
                   </span>
