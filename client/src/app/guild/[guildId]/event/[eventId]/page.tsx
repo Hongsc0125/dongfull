@@ -61,8 +61,14 @@ interface Guild {
 
 async function getGuildInfo(guildId: string): Promise<Guild | null> {
   try {
+    const { headers } = await import('next/headers')
+    const headersList = await headers()
+    
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        cookie: headersList.get('cookie') || '',
+      },
     })
     if (!response.ok) return null
     
@@ -169,17 +175,18 @@ function isAdmin(guild: Guild) {
 export default async function EventDetailPage({ 
   params 
 }: { 
-  params: { guildId: string; eventId: string } 
+  params: Promise<{ guildId: string; eventId: string }> 
 }) {
   const session = await auth()
   if (!session) {
     redirect('/')
   }
 
+  const resolvedParams = await params
   const [guild, event, leaderboard] = await Promise.all([
-    getGuildInfo(params.guildId),
-    getEventInfo(params.eventId),
-    getLeaderboard(params.eventId)
+    getGuildInfo(resolvedParams.guildId),
+    getEventInfo(resolvedParams.eventId),
+    getLeaderboard(resolvedParams.eventId)
   ])
 
   if (!guild || !event) {
@@ -197,7 +204,7 @@ export default async function EventDetailPage({
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link href={`/guild/${params.guildId}`}>
+          <Link href={`/guild/${resolvedParams.guildId}`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               서버로 돌아가기

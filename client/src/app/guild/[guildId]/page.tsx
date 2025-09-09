@@ -44,8 +44,14 @@ interface Guild {
 
 async function getGuildInfo(guildId: string): Promise<Guild | null> {
   try {
+    const { headers } = await import('next/headers')
+    const headersList = await headers()
+    
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        cookie: headersList.get('cookie') || '',
+      },
     })
     if (!response.ok) return null
     
@@ -84,18 +90,19 @@ async function getEventParticipants(eventId: number): Promise<number> {
   }
 }
 
-export default async function GuildPage({ params }: { params: { guildId: string } }) {
+export default async function GuildPage({ params }: { params: Promise<{ guildId: string }> }) {
   const session = await auth()
   if (!session) {
     redirect('/')
   }
 
-  const guild = await getGuildInfo(params.guildId)
+  const resolvedParams = await params
+  const guild = await getGuildInfo(resolvedParams.guildId)
   if (!guild) {
     notFound()
   }
 
-  const events = await getGuildEvents(params.guildId)
+  const events = await getGuildEvents(resolvedParams.guildId)
   
   // 각 이벤트의 참가자 수 가져오기
   const eventsWithParticipants = await Promise.all(

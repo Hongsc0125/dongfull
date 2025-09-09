@@ -18,7 +18,7 @@ interface Guild {
 async function getUserGuilds(): Promise<Guild[]> {
   try {
     const { headers } = await import('next/headers')
-    const headersList = headers()
+    const headersList = await headers()
     
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
       cache: 'no-store',
