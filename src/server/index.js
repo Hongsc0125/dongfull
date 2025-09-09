@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { initDatabase } from '../database/init.js';
-import { getEvents, getEventById } from '../database/events.js';
-import { getLeaderboard } from '../database/participants.js';
+import { getEvents, getEventById, createEvent, updateEventStatus } from '../database/events.js';
+import { getLeaderboard, addParticipant, getParticipant, updateParticipantScore } from '../database/participants.js';
+import { registerGuild } from '../database/guilds.js';
+import { getGuildMembers, searchGuildMembers } from '../database/guild-members.js';
 import { client } from '../bot/index.js';
 
 dotenv.config();
@@ -85,6 +87,155 @@ app.get('/api/guilds', (req, res) => {
     }));
 
     res.json(guilds);
+});
+
+// 이벤트 생성
+app.post('/api/events', async (req, res) => {
+    try {
+        const { 
+            guildId, 
+            eventName, 
+            description, 
+            scoreType, 
+            creatorId, 
+            sortDirection, 
+            scoreAggregation 
+        } = req.body;
+
+        // 입력값 검증
+        if (!guildId || !eventName || !creatorId) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // 길드가 없으면 등록 (Discord에서 길드 정보 가져오기)
+        if (client.isReady()) {
+            const guild = client.guilds.cache.get(guildId);
+            if (guild) {
+                await registerGuild(guildId, guild.name, guild.ownerId);
+            }
+        }
+
+        // 이벤트 생성
+        const event = await createEvent(
+            guildId,
+            eventName,
+            description,
+            scoreType || 'points',
+            creatorId,
+            sortDirection || 'desc',
+            scoreAggregation || 'sum'
+        );
+
+        res.json(event);
+    } catch (error) {
+        console.error('Error creating event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 이벤트 상태 변경 (활성화/비활성화)
+app.patch('/api/events/:eventId/toggle', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const { isActive } = req.body;
+
+        const event = await updateEventStatus(parseInt(eventId), isActive);
+        
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        res.json(event);
+    } catch (error) {
+        console.error('Error updating event status:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 길드 멤버 목록 조회
+app.get('/api/guild/:guildId/members', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { search, limit = 50 } = req.query;
+
+        let members;
+        if (search) {
+            members = await searchGuildMembers(guildId, search, parseInt(limit));
+        } else {
+            members = await getGuildMembers(guildId, parseInt(limit));
+        }
+
+        res.json(members);
+    } catch (error) {
+        console.error('Error fetching guild members:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 점수 추가
+app.post('/api/participants/:participantId/score', async (req, res) => {
+    try {
+        const { participantId } = req.params;
+        const { score, addedBy, note } = req.body;
+
+        if (score === undefined || !addedBy) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const participant = await updateParticipantScore(
+            parseInt(participantId),
+            parseFloat(score),
+            addedBy,
+            note
+        );
+
+        res.json(participant);
+    } catch (error) {
+        console.error('Error adding score:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 참가자 추가 또는 조회
+app.post('/api/participants', async (req, res) => {
+    try {
+        const { eventId, userId, username, discriminator, avatarUrl } = req.body;
+
+        if (!eventId || !userId || !username) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const participant = await addParticipant(
+            parseInt(eventId),
+            userId,
+            username,
+            discriminator || '0',
+            avatarUrl
+        );
+
+        res.json(participant);
+    } catch (error) {
+        console.error('Error adding participant:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 특정 참가자 조회
+app.get('/api/events/:eventId/participants/:userId', async (req, res) => {
+    try {
+        const { eventId, userId } = req.params;
+
+        const participant = await getParticipant(parseInt(eventId), userId);
+        
+        if (!participant) {
+            return res.status(404).json({ error: 'Participant not found' });
+        }
+
+        res.json(participant);
+    } catch (error) {
+        console.error('Error fetching participant:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.use((err, req, res, next) => {
