@@ -20,7 +20,7 @@ const nextConfig = {
   },
   // Cross-origin 경고 해결
   experimental: {
-    allowedDevOrigins: ['evt-board.com'],
+    allowedDevOrigins: ['evt-board.com', 'https://evt-board.com'],
   },
 }
 

@@ -188,8 +188,6 @@ export default async function EventDetailPage({
     getLeaderboard(resolvedParams.eventId)
   ])
 
-  console.log('Event data:', event)
-  console.log('Leaderboard data:', leaderboard)
 
   if (!guild || !event) {
     notFound()
