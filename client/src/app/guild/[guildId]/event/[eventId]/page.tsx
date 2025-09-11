@@ -167,6 +167,23 @@ function getAggregationDisplay(aggregation: string) {
   }
 }
 
+function getSortDirectionDisplay(scoreType: string, sortDirection: string) {
+  const isHigherBetter = sortDirection === 'desc'
+  if (scoreType === 'time_seconds') {
+    return {
+      label: isHigherBetter ? '높은 순' : '낮은 순',
+      description: isHigherBetter ? '긴 시간이 좋음' : '짧은 시간이 좋음',
+      icon: Trophy
+    }
+  } else {
+    return {
+      label: isHigherBetter ? '높은 순' : '낮은 순', 
+      description: isHigherBetter ? '높은 점수가 좋음' : '낮은 점수가 좋음',
+      icon: Trophy
+    }
+  }
+}
+
 function isAdmin(guild: Guild) {
   const permissions = parseInt(guild.permissions)
   return (permissions & 0x8) === 0x8 || guild.owner
@@ -197,8 +214,10 @@ export default async function EventDetailPage({
   const userIsAdmin = isAdmin(guild)
   const scoreTypeInfo = getScoreTypeDisplay(event.score_type)
   const aggregationInfo = getAggregationDisplay(event.score_aggregation)
+  const sortDirectionInfo = getSortDirectionDisplay(event.score_type, event.sort_direction)
   const ScoreIcon = scoreTypeInfo.icon
   const AggIcon = aggregationInfo.icon
+  const SortIcon = sortDirectionInfo.icon
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -244,6 +263,10 @@ export default async function EventDetailPage({
                     <AggIcon className="mr-1 h-3 w-3" />
                     {aggregationInfo.label}
                   </Badge>
+                  <Badge variant="outline">
+                    <SortIcon className="mr-1 h-3 w-3" />
+                    {sortDirectionInfo.label}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -267,7 +290,7 @@ export default async function EventDetailPage({
           )}
 
           {/* Event Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">참가자 수</CardTitle>
@@ -305,6 +328,19 @@ export default async function EventDetailPage({
                 <div className="text-2xl font-bold">{aggregationInfo.label}</div>
                 <p className="text-xs text-muted-foreground">
                   {aggregationInfo.description}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">정렬 방식</CardTitle>
+                <SortIcon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{sortDirectionInfo.label}</div>
+                <p className="text-xs text-muted-foreground">
+                  {sortDirectionInfo.description}
                 </p>
               </CardContent>
             </Card>
