@@ -19,7 +19,7 @@ import { auth } from "../../../../../../auth"
 import { redirect } from "next/navigation"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { EnhancedScoreManagement } from "@/components/enhanced-score-management"
+import { EnhancedScoreManagement } from "@/components/enhanced-score-management-v2"
 import { EventToggle } from "@/components/event-toggle"
 
 interface Event {
