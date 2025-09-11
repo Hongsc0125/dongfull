@@ -26,10 +26,14 @@ interface UserHistoryModalProps {
   sortDirection: 'asc' | 'desc'
 }
 
-function formatScore(score: number, scoreType: string) {
+function formatScore(score: number, scoreType: string, isAverage: boolean = false) {
   const numScore = parseFloat(score.toString())
   switch (scoreType) {
     case 'time_seconds':
+      if (isAverage) {
+        // 평균 시간은 소수점 2자리까지 표시
+        return `${numScore.toFixed(2)}초`
+      }
       const totalSeconds = Math.round(numScore)
       if (totalSeconds < 60) {
         return `${totalSeconds}초`
@@ -48,7 +52,8 @@ function formatScore(score: number, scoreType: string) {
       }
     case 'points':
     default:
-      return `${numScore}점`
+      // 평균 점수는 소수점 2자리까지 표시
+      return isAverage ? `${numScore.toFixed(2)}점` : `${numScore}점`
   }
 }
 
@@ -58,6 +63,14 @@ function getAggregationLabel(aggregationType: string) {
     case 'average': return '평균'
     case 'best': return '최고 기록'
     default: return '총합'
+  }
+}
+
+function getSortDirectionLabel(scoreType: string, sortDirection: string) {
+  if (scoreType === 'time_seconds') {
+    return sortDirection === 'desc' ? '높은 순' : '낮은 순'
+  } else {
+    return sortDirection === 'desc' ? '높은 순' : '낮은 순'
   }
 }
 
@@ -143,7 +156,7 @@ export function UserHistoryModal({
             {userName}의 참여 기록
           </DialogTitle>
           <DialogDescription>
-            {eventName} 이벤트의 모든 기록
+            {eventName} 이벤트의 모든 기록 ({getSortDirectionLabel(scoreType, sortDirection)} 정렬)
           </DialogDescription>
         </DialogHeader>
 
@@ -240,7 +253,7 @@ export function UserHistoryModal({
                         <span className="text-sm font-medium">평균 점수</span>
                       </div>
                       <div className="text-2xl font-bold text-purple-600">
-                        {formatScore(stats.average, scoreType)}
+                        {formatScore(stats.average, scoreType, true)}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
                         기록당 평균
