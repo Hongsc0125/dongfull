@@ -142,65 +142,48 @@ export async function updateParticipantScore(participantId, scoreChange, addedBy
 
 export async function getLeaderboard(eventId, limit = 999) {
     try {
-        // 이벤트 정보를 가져와서 집계 방식과 정렬 방향 확인
-        const eventResult = await db.query(`
-            SELECT score_aggregation, sort_direction 
-            FROM events 
-            WHERE id = $1
-        `, [eventId]);
-        
-        if (eventResult.rows.length === 0) {
-            throw new Error('Event not found');
-        }
-        
-        const { score_aggregation, sort_direction } = eventResult.rows[0];
-        
-        let scoreQuery = '';
-        
-        // 집계 방식에 따라 쿼리 변경
-        switch (score_aggregation) {
-            case 'sum':
-                scoreQuery = 'p.total_score as calculated_score';
-                break;
-            case 'average':
-                scoreQuery = `
-                    CASE 
-                        WHEN p.entries_count > 0 THEN p.total_score / p.entries_count 
-                        ELSE 0 
-                    END as calculated_score
-                `;
-                break;
-            case 'best':
-                scoreQuery = `
-                    COALESCE((
-                        SELECT ${sort_direction === 'desc' ? 'MAX(score)' : 'MIN(score)'} 
-                        FROM score_entries se 
-                        WHERE se.participant_id = p.id
-                    ), 0) as calculated_score
-                `;
-                break;
-            default:
-                scoreQuery = 'p.total_score as calculated_score';
-        }
-        
-        
+        // 한 번의 쿼리로 이벤트 정보와 리더보드를 함께 조회
         const result = await db.query(`
-            SELECT 
-                *,
-                ROW_NUMBER() OVER (ORDER BY calculated_score ${sort_direction === 'desc' ? 'DESC' : 'ASC'}, display_name ASC) as rank
-            FROM (
+            WITH event_info AS (
+                SELECT score_aggregation, sort_direction, guild_id
+                FROM events 
+                WHERE id = $1
+            ),
+            participant_scores AS (
                 SELECT 
                     p.*,
                     p.entries_count as entry_count,
                     COALESCE(gm.display_name, p.username) as display_name,
-                    ${scoreQuery}
+                    CASE ei.score_aggregation
+                        WHEN 'sum' THEN p.total_score
+                        WHEN 'average' THEN 
+                            CASE WHEN p.entries_count > 0 THEN p.total_score / p.entries_count ELSE 0 END
+                        WHEN 'best' THEN 
+                            CASE ei.sort_direction 
+                                WHEN 'desc' THEN COALESCE((SELECT MAX(score) FROM score_entries se WHERE se.participant_id = p.id), 0)
+                                ELSE COALESCE((SELECT MIN(score) FROM score_entries se WHERE se.participant_id = p.id), 0)
+                            END
+                        ELSE p.total_score
+                    END as calculated_score,
+                    ei.sort_direction
                 FROM participants p
-                LEFT JOIN guild_members gm ON p.user_id = gm.user_id AND gm.guild_id = (
-                    SELECT guild_id FROM events WHERE id = $1
-                )
+                CROSS JOIN event_info ei
+                LEFT JOIN guild_members gm ON p.user_id = gm.user_id AND gm.guild_id = ei.guild_id
                 WHERE p.event_id = $1
-            ) ranked_data
-            ORDER BY calculated_score ${sort_direction === 'desc' ? 'DESC' : 'ASC'}, display_name ASC
+            )
+            SELECT 
+                *,
+                ROW_NUMBER() OVER (
+                    ORDER BY 
+                        CASE WHEN sort_direction = 'desc' THEN calculated_score END DESC,
+                        CASE WHEN sort_direction = 'asc' THEN calculated_score END ASC,
+                        display_name ASC
+                ) as rank
+            FROM participant_scores
+            ORDER BY 
+                CASE WHEN sort_direction = 'desc' THEN calculated_score END DESC,
+                CASE WHEN sort_direction = 'asc' THEN calculated_score END ASC,
+                display_name ASC
             LIMIT $2
         `, [eventId, limit]);
 

@@ -60,7 +60,7 @@ export function EventToggle({ event, userIsAdmin }: EventToggleProps) {
       }
 
       // 성공시 페이지 새로고침
-      router.refresh()
+      window.location.reload()
     } catch (error) {
       console.error('Error toggling event status:', error)
       setError(error instanceof Error ? error.message : '이벤트 상태 변경 중 오류가 발생했습니다')

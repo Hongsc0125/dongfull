@@ -67,7 +67,7 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
     const headersList = await headers()
     
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
-      next: { revalidate: 300 }, // 5분 캐싱
+      cache: 'no-store',
       headers: {
         cookie: headersList.get('cookie') || '',
       },
@@ -89,7 +89,7 @@ async function getEventDetail(eventId: string): Promise<{
 }> {
   try {
     const response = await fetch(`http://localhost:3001/api/event-detail/${eventId}/full`, {
-      next: { revalidate: 60 } // 1분 캐싱
+      cache: 'no-store'
     })
     if (!response.ok) {
       return { event: null, leaderboard: [], stats: { participantCount: 0, totalEntries: 0 } }

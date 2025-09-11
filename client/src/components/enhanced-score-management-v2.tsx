@@ -186,11 +186,11 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
       setSearchResults([])
       setShowDropdown(false)
       
-      // 3초 후 다이얼로그 닫기
+      // 즉시 페이지 새로고침
       setTimeout(() => {
         setIsOpen(false)
-        router.refresh() // 페이지 새로고침하여 리더보드 업데이트
-      }, 2000)
+        window.location.reload()
+      }, 1500)
 
     } catch (err) {
       setError(err instanceof Error ? err.message : '점수 추가 중 오류가 발생했습니다.')
