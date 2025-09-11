@@ -34,19 +34,22 @@ export function ShareButton({ eventName, eventId }: ShareButtonProps) {
     }
   }
   
-  const handleShare = async () => {
-    if (navigator.share) {
+  const handleShare = () => {
+    setIsOpen(true)
+  }
+
+  const handleNativeShare = async () => {
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
         await navigator.share({
           title: `🏆 ${eventName} 랭킹`,
           text: `${eventName} 이벤트의 실시간 랭킹을 확인해보세요!`,
           url: shareUrl,
         })
+        setIsOpen(false) // 공유 성공 시 모달 닫기
       } catch (err) {
         console.log('Sharing failed:', err)
       }
-    } else {
-      setIsOpen(true)
     }
   }
   
@@ -99,7 +102,7 @@ export function ShareButton({ eventName, eventId }: ShareButtonProps) {
           </Button>
         </div>
         
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center gap-2 mt-4">
           <Button 
             variant="outline" 
             size="sm"
@@ -108,6 +111,17 @@ export function ShareButton({ eventName, eventId }: ShareButtonProps) {
             <ExternalLink className="h-4 w-4 mr-2" />
             새 탭에서 열기
           </Button>
+          
+{typeof navigator !== 'undefined' && 'share' in navigator && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleNativeShare}
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              네이티브 공유
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
