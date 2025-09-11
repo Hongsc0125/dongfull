@@ -48,7 +48,7 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
     const headersList = await headers()
     
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
-      cache: 'no-store',
+      next: { revalidate: 300 }, // 5분 캐싱
       headers: {
         cookie: headersList.get('cookie') || '',
       },
@@ -65,7 +65,7 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
 async function getGuildEvents(guildId: string): Promise<Event[]> {
   try {
     const response = await fetch(`http://localhost:3001/api/events/${guildId}`, {
-      cache: 'no-store'
+      next: { revalidate: 60 } // 1분 캐싱
     })
     if (!response.ok) throw new Error('Failed to fetch events')
     return await response.json()

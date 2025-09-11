@@ -10,6 +10,8 @@ import { getGuildMembers, searchGuildMembers } from '../database/guild-members.j
 import { client } from '../bot/index.js';
 import { apiLogger } from '../utils/logger.js';
 import logsRouter from './routes/logs.js';
+import guildRouter from './routes/guild.js';
+import eventDetailRouter from './routes/event-detail.js';
 
 dotenv.config();
 
@@ -29,8 +31,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// 로그 라우터 추가
+// 라우터 추가
 app.use('/api/logs', logsRouter);
+app.use('/api/guild', guildRouter);
+app.use('/api/event-detail', eventDetailRouter);
 
 // API 요청 로깅 미들웨어
 app.use((req, res, next) => {

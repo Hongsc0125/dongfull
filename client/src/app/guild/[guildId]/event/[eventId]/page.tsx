@@ -67,7 +67,7 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
     const headersList = await headers()
     
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
-      cache: 'no-store',
+      next: { revalidate: 300 }, // 5분 캐싱
       headers: {
         cookie: headersList.get('cookie') || '',
       },
@@ -81,28 +81,23 @@ async function getGuildInfo(guildId: string): Promise<Guild | null> {
   }
 }
 
-async function getEventInfo(eventId: string): Promise<Event | null> {
+// 이벤트 상세정보와 리더보드를 한번에 가져오는 최적화된 함수
+async function getEventDetail(eventId: string): Promise<{
+  event: Event | null,
+  leaderboard: Participant[],
+  stats: { participantCount: number, totalEntries: number }
+}> {
   try {
-    const response = await fetch(`http://localhost:3001/api/event/${eventId}`, {
-      cache: 'no-store'
+    const response = await fetch(`http://localhost:3001/api/event-detail/${eventId}/full`, {
+      next: { revalidate: 60 } // 1분 캐싱
     })
-    if (!response.ok) return null
-    return await response.json()
-  } catch {
-    return null
-  }
-}
-
-async function getLeaderboard(eventId: string): Promise<Participant[]> {
-  try {
-    const response = await fetch(`http://localhost:3001/api/leaderboard/${eventId}`, {
-      cache: 'no-store'
-    })
-    if (!response.ok) return []
+    if (!response.ok) {
+      return { event: null, leaderboard: [], stats: { participantCount: 0, totalEntries: 0 } }
+    }
     return await response.json()
   } catch (error) {
-    console.error('Error fetching leaderboard:', error)
-    return []
+    console.error('Error fetching event detail:', error)
+    return { event: null, leaderboard: [], stats: { participantCount: 0, totalEntries: 0 } }
   }
 }
 
@@ -200,11 +195,12 @@ export default async function EventDetailPage({
   }
 
   const resolvedParams = await params
-  const [guild, event, leaderboard] = await Promise.all([
+  const [guild, eventDetail] = await Promise.all([
     getGuildInfo(resolvedParams.guildId),
-    getEventInfo(resolvedParams.eventId),
-    getLeaderboard(resolvedParams.eventId)
+    getEventDetail(resolvedParams.eventId)
   ])
+  
+  const { event, leaderboard, stats } = eventDetail
 
 
   if (!guild || !event) {
@@ -297,7 +293,7 @@ export default async function EventDetailPage({
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{leaderboard.length}</div>
+                <div className="text-2xl font-bold">{stats.participantCount}</div>
                 <p className="text-xs text-muted-foreground">
                   이벤트에 참여한 사용자
                 </p>
@@ -311,7 +307,7 @@ export default async function EventDetailPage({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {leaderboard.reduce((sum, p) => sum + (p.entry_count || 0), 0)}
+                  {stats.totalEntries}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   전체 점수 제출 횟수

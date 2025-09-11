@@ -52,6 +52,24 @@ export async function updateGuildSettings(guildId, settings) {
     }
 }
 
+export async function getGuilds() {
+    try {
+        const result = await db.query(`
+            SELECT * FROM guilds 
+            ORDER BY guild_name ASC
+        `);
+
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting guilds:', error);
+        throw error;
+    }
+}
+
+export async function addGuild(guildId, guildName, ownerId) {
+    return await registerGuild(guildId, guildName, ownerId);
+}
+
 export async function isServerOwnerOrAdmin(guildId, userId, member) {
     try {
         const guild = await getGuild(guildId);
