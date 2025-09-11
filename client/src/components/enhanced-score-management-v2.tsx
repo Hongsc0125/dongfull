@@ -33,9 +33,10 @@ interface Event {
 interface ScoreManagementProps {
   event: Event
   userIsAdmin: boolean
+  onScoreAdded?: () => void
 }
 
-export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementProps) {
+export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: ScoreManagementProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
@@ -186,10 +187,12 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
       setSearchResults([])
       setShowDropdown(false)
       
-      // 즉시 페이지 새로고침
+      // 실시간 업데이트 콜백 호출
       setTimeout(() => {
         setIsOpen(false)
-        window.location.reload()
+        if (onScoreAdded) {
+          onScoreAdded()
+        }
       }, 1500)
 
     } catch (err) {

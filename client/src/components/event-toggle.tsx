@@ -28,9 +28,10 @@ interface Event {
 interface EventToggleProps {
   event: Event
   userIsAdmin: boolean
+  onToggle?: () => void
 }
 
-export function EventToggle({ event, userIsAdmin }: EventToggleProps) {
+export function EventToggle({ event, userIsAdmin, onToggle }: EventToggleProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -59,8 +60,10 @@ export function EventToggle({ event, userIsAdmin }: EventToggleProps) {
         throw new Error(errorData.error || 'Failed to update event status')
       }
 
-      // 성공시 페이지 새로고침
-      window.location.reload()
+      // 실시간 업데이트 콜백 호출
+      if (onToggle) {
+        onToggle()
+      }
     } catch (error) {
       console.error('Error toggling event status:', error)
       setError(error instanceof Error ? error.message : '이벤트 상태 변경 중 오류가 발생했습니다')
