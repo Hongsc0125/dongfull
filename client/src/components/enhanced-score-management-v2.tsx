@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -48,9 +48,23 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<GuildMember[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
   
   // 길드 멤버 정보를 비동기로 로드
   const { members, isLoading: membersLoading, error: membersError, searchMembers } = useGuildMembers(event.guild_id)
+  
+  // 검색 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
   
   if (!userIsAdmin || !event.is_active) {
     return null
@@ -72,6 +86,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
       setSuccess("")
       setSearchQuery("")
       setSearchResults([])
+      setShowDropdown(false)
     }
   }
 
@@ -80,9 +95,11 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
     
     if (!query.trim()) {
       setSearchResults([])
+      setShowDropdown(false)
       return
     }
     
+    setShowDropdown(true)
     setSearchLoading(true)
     try {
       const results = await searchMembers(query)
@@ -165,6 +182,9 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
       setSelectedUserId("")
       setScore("")
       setNote("")
+      setSearchQuery("")
+      setSearchResults([])
+      setShowDropdown(false)
       
       // 3초 후 다이얼로그 닫기
       setTimeout(() => {
@@ -205,7 +225,6 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
     return `${num}점`
   }
 
-  const displayMembers = searchQuery.trim() ? searchResults : members.slice(0, 20)
   const ScoreIcon = event.score_type === 'points' ? Target : Clock
 
   return (
@@ -265,61 +284,87 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
         )}
 
         <div className="space-y-6">
-          {/* 사용자 검색 */}
+          {/* 사용자 검색 및 선택 */}
           <div className="space-y-2">
-            <Label htmlFor="search">사용자 검색</Label>
-            <div className="relative">
+            <Label htmlFor="userSearch">사용자 선택</Label>
+            <div className="relative" ref={searchRef}>
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                id="search"
-                placeholder="사용자 이름으로 검색..."
+                id="userSearch"
+                placeholder="사용자 이름을 입력하여 검색..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => searchQuery.trim() && setShowDropdown(true)}
                 className="pl-10"
               />
               {searchLoading && (
                 <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
               )}
-            </div>
-          </div>
-
-          {/* 사용자 선택 */}
-          <div className="space-y-2">
-            <Label>사용자 선택</Label>
-            <div className="max-h-48 overflow-y-auto border rounded-lg">
-              {displayMembers.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  {searchQuery.trim() ? '검색 결과가 없습니다' : '멤버를 불러오는 중...'}
-                </div>
-              ) : (
-                displayMembers.map((member) => (
-                  <div
-                    key={member.user_id}
-                    className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
-                      selectedUserId === member.user_id ? 'bg-blue-50 border-blue-200' : ''
-                    }`}
-                    onClick={() => setSelectedUserId(member.user_id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={member.avatar_url} />
-                        <AvatarFallback>
-                          {member.display_name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{member.display_name}</div>
-                        <div className="text-sm text-gray-500">@{member.username}</div>
-                      </div>
-                      {selectedUserId === member.user_id && (
-                        <Badge className="ml-auto">선택됨</Badge>
-                      )}
+              
+              {/* 검색 결과 드롭다운 */}
+              {showDropdown && searchQuery.trim() && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {searchResults.length === 0 && !searchLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <Users className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                      검색 결과가 없습니다
                     </div>
-                  </div>
-                ))
+                  ) : (
+                    searchResults.map((member) => (
+                      <div
+                        key={member.user_id}
+                        className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
+                          selectedUserId === member.user_id ? 'bg-blue-50 border-blue-200' : ''
+                        }`}
+                        onClick={() => {
+                          setSelectedUserId(member.user_id)
+                          setSearchQuery(member.display_name)
+                          setShowDropdown(false)
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={member.avatar_url} />
+                            <AvatarFallback>
+                              {member.display_name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{member.display_name}</div>
+                            <div className="text-sm text-gray-500">@{member.username}</div>
+                          </div>
+                          {selectedUserId === member.user_id && (
+                            <Badge className="ml-auto">선택됨</Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
             </div>
+            
+            {/* 선택된 사용자 표시 */}
+            {selectedUserId && (() => {
+              const selectedMember = [...members, ...searchResults].find(m => m.user_id === selectedUserId)
+              return selectedMember ? (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={selectedMember.avatar_url} />
+                      <AvatarFallback>
+                        {selectedMember.display_name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium text-blue-900">{selectedMember.display_name}</div>
+                      <div className="text-sm text-blue-700">@{selectedMember.username}</div>
+                    </div>
+                    <Badge className="ml-auto bg-blue-600">선택됨</Badge>
+                  </div>
+                </div>
+              ) : null
+            })()}
           </div>
 
           {/* 점수 입력 */}
