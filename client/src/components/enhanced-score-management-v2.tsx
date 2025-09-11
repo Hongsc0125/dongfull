@@ -249,7 +249,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ScoreIcon className="h-5 w-5" />
@@ -291,10 +291,10 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="userSearch"
-                placeholder="사용자 이름을 입력하여 검색..."
+                placeholder="사용자를 검색하세요..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                onFocus={() => searchQuery.trim() && setShowDropdown(true)}
+                onFocus={() => searchQuery.trim() && searchResults.length > 0 && setShowDropdown(true)}
                 className="pl-10"
               />
               {searchLoading && (
@@ -302,44 +302,44 @@ export function EnhancedScoreManagement({ event, userIsAdmin }: ScoreManagementP
               )}
               
               {/* 검색 결과 드롭다운 */}
-              {showDropdown && searchQuery.trim() && (
+              {showDropdown && searchQuery.trim() && searchResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {searchResults.length === 0 && !searchLoading ? (
-                    <div className="p-4 text-center text-gray-500">
-                      <Users className="h-6 w-6 mx-auto mb-2 text-gray-400" />
-                      검색 결과가 없습니다
-                    </div>
-                  ) : (
-                    searchResults.map((member) => (
-                      <div
-                        key={member.user_id}
-                        className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
-                          selectedUserId === member.user_id ? 'bg-blue-50 border-blue-200' : ''
-                        }`}
-                        onClick={() => {
-                          setSelectedUserId(member.user_id)
-                          setSearchQuery(member.display_name)
-                          setShowDropdown(false)
-                        }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={member.avatar_url} />
-                            <AvatarFallback>
-                              {member.display_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{member.display_name}</div>
-                            <div className="text-sm text-gray-500">@{member.username}</div>
-                          </div>
-                          {selectedUserId === member.user_id && (
-                            <Badge className="ml-auto">선택됨</Badge>
-                          )}
+                  {searchResults.map((member) => (
+                    <div
+                      key={member.user_id}
+                      className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
+                        selectedUserId === member.user_id ? 'bg-blue-50 border-blue-200' : ''
+                      }`}
+                      onClick={() => {
+                        setSelectedUserId(member.user_id)
+                        setSearchQuery(member.display_name)
+                        setShowDropdown(false)
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={member.avatar_url} />
+                          <AvatarFallback>
+                            {member.display_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{member.display_name}</div>
+                          <div className="text-sm text-gray-500">@{member.username}</div>
                         </div>
+                        {selectedUserId === member.user_id && (
+                          <Badge className="ml-auto">선택됨</Badge>
+                        )}
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* 검색했지만 결과가 없을 때 힌트 */}
+              {searchQuery.trim() && !searchLoading && searchResults.length === 0 && (
+                <div className="text-sm text-gray-500 mt-2">
+                  검색 결과가 없습니다. 다른 키워드로 시도해보세요.
                 </div>
               )}
             </div>
