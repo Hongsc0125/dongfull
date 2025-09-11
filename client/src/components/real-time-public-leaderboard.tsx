@@ -344,23 +344,23 @@ export function RealTimePublicLeaderboard({
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-3">
                             <Trophy className="h-5 w-5 text-slate-400" />
-                            <span className="text-2xl font-bold text-slate-700 drop-shadow-lg">
+                            <span className="text-2xl font-bold text-white/90">
                               #{participant.rank}
                             </span>
                           </div>
                           
                           <div>
-                            <h4 className="text-xl font-semibold text-slate-800 drop-shadow-lg">
+                            <h4 className="text-xl font-semibold text-white">
                               {participant.display_name}
                             </h4>
-                            <p className="text-sm text-slate-600 drop-shadow-sm">
+                            <p className="text-sm text-white/60">
                               {participant.entry_count}회 참여
                             </p>
                           </div>
                         </div>
                         
                         <div className="text-right">
-                          <div className="text-2xl font-bold text-slate-800 drop-shadow-lg">
+                          <div className="text-2xl font-bold text-white">
                             {formatScore(displayScore, event.score_type, event.score_aggregation === 'average')}
                           </div>
                         </div>
