@@ -21,6 +21,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { EnhancedScoreManagement } from "@/components/enhanced-score-management-v2"
 import { EventToggle } from "@/components/event-toggle"
+import { LeaderboardWithModal } from "@/components/leaderboard-with-modal"
 
 interface Event {
   id: number
@@ -287,7 +288,7 @@ export default async function EventDetailPage({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {leaderboard.reduce((sum, p) => sum + p.entry_count, 0)}
+                  {leaderboard.reduce((sum, p) => sum + (p.entry_count || 0), 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   전체 점수 제출 횟수
@@ -329,95 +330,11 @@ export default async function EventDetailPage({
         </div>
 
         {/* Leaderboard */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  리더보드
-                </CardTitle>
-                <CardDescription>
-                  {event.is_active ? '현재 순위' : '최종 순위'} (총 {leaderboard.length}명 참가)
-                </CardDescription>
-              </div>
-              {userIsAdmin && event.is_active && (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Discord에서 <code>/점수추가</code>로 점수를 추가할 수 있습니다
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {leaderboard.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  아직 참가자가 없습니다
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  관리자가 점수를 추가하면 여기에 표시됩니다
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {leaderboard.map((participant, index) => {
-                  const displayScore = participant.calculated_score !== undefined ? 
-                    participant.calculated_score : participant.total_score
-                  
-                  return (
-                    <div 
-                      key={participant.user_id}
-                      className={`flex items-center justify-between p-4 rounded-lg border ${
-                        participant.rank <= 3 
-                          ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 border-yellow-200 dark:border-yellow-800' 
-                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">
-                            {getRankEmoji(participant.rank)}
-                          </span>
-                          <div className="flex flex-col">
-                            <span className="font-bold text-lg">
-                              {participant.rank}위
-                            </span>
-                            {participant.rank <= 3 && (
-                              <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
-                                TOP 3
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-white">
-                            {participant.display_name}
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {participant.entry_count}회 기록
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-gray-900 dark:text-white">
-                          {formatScore(displayScore, event.score_type)}
-                        </div>
-                        {event.score_aggregation !== 'best' && participant.entry_count > 1 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {aggregationInfo.label} 점수
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <LeaderboardWithModal 
+          event={event}
+          leaderboard={leaderboard}
+          userIsAdmin={userIsAdmin}
+        />
 
         {/* Discord Commands Info */}
         {userIsAdmin && (

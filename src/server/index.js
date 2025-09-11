@@ -277,6 +277,32 @@ app.get('/api/events/:eventId/participants/:userId', async (req, res) => {
     }
 });
 
+// 참가자 기록 히스토리 조회
+app.get('/api/participants/history', async (req, res) => {
+    try {
+        const { eventId, userId } = req.query;
+
+        if (!eventId || !userId) {
+            return res.status(400).json({ error: 'eventId and userId are required' });
+        }
+
+        const participant = await getParticipant(parseInt(eventId), userId);
+        
+        if (!participant) {
+            return res.status(404).json({ error: 'Participant not found' });
+        }
+
+        // 참가자의 모든 기록을 반환 (entries 배열에 포함되어 있음)
+        res.json({
+            participant,
+            entries: participant.entries || []
+        });
+    } catch (error) {
+        apiLogger.error('Error fetching participant history:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.use((err, req, res, next) => {
     apiLogger.error('Unhandled error:', err);
     res.status(500).json({ error: 'Internal server error' });
