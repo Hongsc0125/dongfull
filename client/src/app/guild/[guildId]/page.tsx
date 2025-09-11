@@ -414,46 +414,6 @@ export default async function GuildPage({ params }: { params: Promise<{ guildId:
             </CardContent>
           </Card>
         )}
-
-        {/* Help Section */}
-        {isAdmin(guild) && (
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>🛠️ 관리자 기능</CardTitle>
-              <CardDescription>
-                Discord에서 사용할 수 있는 관리자 명령어들
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <code className="text-sm font-mono text-blue-600">/이벤트생성</code>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    새로운 랭킹 이벤트를 생성합니다
-                  </p>
-                </div>
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <code className="text-sm font-mono text-green-600">/점수추가</code>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    참가자에게 점수를 추가합니다
-                  </p>
-                </div>
-                <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <code className="text-sm font-mono text-purple-600">/이벤트토글</code>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    이벤트를 활성화하거나 비활성화합니다
-                  </p>
-                </div>
-                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                  <code className="text-sm font-mono text-orange-600">/이벤트정보</code>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    이벤트의 상세 정보를 확인합니다
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )

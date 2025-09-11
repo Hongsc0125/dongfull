@@ -212,42 +212,6 @@ export default async function Dashboard() {
             )}
           </CardContent>
         </Card>
-
-        {/* Help Section */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>💡 도움말</CardTitle>
-              <CardDescription>
-                Event Board 사용법 및 문의사항
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <h4 className="font-semibold mb-2">📖 사용법</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Discord에서 슬래시 명령어를 사용하여 이벤트를 관리할 수 있습니다.
-                  </p>
-                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                    <li>• <code>/이벤트생성</code> - 새 이벤트 생성</li>
-                    <li>• <code>/점수추가</code> - 점수 추가 (관리자)</li>
-                    <li>• <code>/순위</code> - 리더보드 확인</li>
-                  </ul>
-                </div>
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <h4 className="font-semibold mb-2">🔧 문의사항</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    버그 신고나 기능 요청이 있으시면 연락해주세요.
-                  </p>
-                  <Button variant="outline" size="sm">
-                    GitHub Issues
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )
