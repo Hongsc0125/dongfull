@@ -223,20 +223,20 @@ export function PublicLeaderboard({ event, leaderboard, stats }: PublicLeaderboa
                             {getRankIcon(participant.rank)}
                             <div className={cn(
                               "text-6xl font-black",
-                              participant.rank === 1 && "text-yellow-400",
-                              participant.rank === 2 && "text-gray-300",
-                              participant.rank === 3 && "text-amber-500",
-                              participant.rank > 3 && "text-white/70"
+                              participant.rank === 1 && "text-yellow-600 drop-shadow-xl",
+                              participant.rank === 2 && "text-gray-600 drop-shadow-xl",
+                              participant.rank === 3 && "text-amber-700 drop-shadow-xl",
+                              participant.rank > 3 && "text-slate-700 drop-shadow-lg"
                             )}>
                               #{participant.rank}
                             </div>
                           </div>
                           
                           <div>
-                            <h3 className="text-3xl font-bold text-white mb-2">
+                            <h3 className="text-3xl font-bold text-slate-800 drop-shadow-lg mb-2">
                               {participant.display_name}
                             </h3>
-                            <p className="text-white/70">
+                            <p className="text-slate-700 drop-shadow-sm">
                               {participant.entry_count}회 참여
                             </p>
                           </div>
@@ -244,15 +244,15 @@ export function PublicLeaderboard({ event, leaderboard, stats }: PublicLeaderboa
                         
                         <div className="text-right">
                           <div className={cn(
-                            "text-4xl font-bold mb-1",
-                            participant.rank === 1 && "text-yellow-400",
-                            participant.rank === 2 && "text-gray-300", 
-                            participant.rank === 3 && "text-amber-500",
-                            participant.rank > 3 && "text-white"
+                            "text-4xl font-bold mb-1 drop-shadow-lg",
+                            participant.rank === 1 && "text-yellow-600",
+                            participant.rank === 2 && "text-gray-600", 
+                            participant.rank === 3 && "text-amber-700",
+                            participant.rank > 3 && "text-slate-700"
                           )}>
                             {formatScore(displayScore, event.score_type, event.score_aggregation === 'average')}
                           </div>
-                          <p className="text-white/60 text-sm">
+                          <p className="text-slate-600 text-sm drop-shadow-sm">
                             {aggregationInfo.label} 점수
                           </p>
                         </div>
@@ -282,23 +282,23 @@ export function PublicLeaderboard({ event, leaderboard, stats }: PublicLeaderboa
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-3">
                             <Trophy className="h-5 w-5 text-slate-400" />
-                            <span className="text-2xl font-bold text-white/90">
+                            <span className="text-2xl font-bold text-slate-700 drop-shadow-lg">
                               #{participant.rank}
                             </span>
                           </div>
                           
                           <div>
-                            <h4 className="text-xl font-semibold text-white">
+                            <h4 className="text-xl font-semibold text-slate-800 drop-shadow-lg">
                               {participant.display_name}
                             </h4>
-                            <p className="text-sm text-white/60">
+                            <p className="text-sm text-slate-600 drop-shadow-sm">
                               {participant.entry_count}회 참여
                             </p>
                           </div>
                         </div>
                         
                         <div className="text-right">
-                          <div className="text-2xl font-bold text-white">
+                          <div className="text-2xl font-bold text-slate-800 drop-shadow-lg">
                             {formatScore(displayScore, event.score_type, event.score_aggregation === 'average')}
                           </div>
                         </div>
