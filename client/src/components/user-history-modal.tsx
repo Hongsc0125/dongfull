@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Trophy, Clock, Target, Calendar, User, BarChart3 } from "lucide-react"
+import { Trophy, Clock, Target, Calendar, User, BarChart3, Activity } from "lucide-react"
 
 interface ScoreEntry {
   id: number
@@ -192,19 +192,60 @@ export function UserHistoryModal({
 
               <Card>
                 <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-medium">
-                      {sortDirection === 'desc' ? '최고 기록' : '최소 기록'}
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {formatScore(stats.best, scoreType)}
-                  </div>
-                  {aggregationType !== 'best' && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      개인 베스트
-                    </div>
+                  {aggregationType === 'best' ? (
+                    // best 모드일 때는 최신 기록 표시
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium">최근 기록</span>
+                      </div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {entries.length > 0 ? formatScore(entries[0].score, scoreType) : '기록 없음'}
+                      </div>
+                      {entries.length > 0 && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(entries[0].created_at).toLocaleDateString('ko-KR', {
+                            month: 'numeric',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      )}
+                    </>
+                  ) : aggregationType === 'average' ? (
+                    // average 모드일 때는 베스트 기록 표시
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Trophy className="h-4 w-4 text-yellow-600" />
+                        <span className="text-sm font-medium">
+                          {scoreType === 'time_seconds' 
+                            ? (sortDirection === 'desc' ? '최장 기록' : '최단 기록')
+                            : (sortDirection === 'desc' ? '최고 점수' : '최소 점수')
+                          }
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {formatScore(stats.best, scoreType)}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        개인 베스트
+                      </div>
+                    </>
+                  ) : (
+                    // sum 모드일 때는 평균 표시
+                    <>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Activity className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium">평균 점수</span>
+                      </div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {formatScore(stats.average, scoreType)}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        기록당 평균
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
