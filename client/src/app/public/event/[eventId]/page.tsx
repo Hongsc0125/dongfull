@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { PublicLeaderboard } from '@/components/public-leaderboard'
+import { RealTimePublicLeaderboard } from '@/components/real-time-public-leaderboard'
 
 interface Event {
   id: number
@@ -86,10 +86,11 @@ export default async function PublicEventPage({
   }
 
   return (
-    <PublicLeaderboard 
-      event={event}
-      leaderboard={leaderboard}
-      stats={stats}
+    <RealTimePublicLeaderboard 
+      eventId={resolvedParams.eventId}
+      initialEvent={event}
+      initialLeaderboard={leaderboard}
+      initialStats={stats}
     />
   )
 }

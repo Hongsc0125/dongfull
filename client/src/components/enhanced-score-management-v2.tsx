@@ -187,12 +187,14 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
       setSearchResults([])
       setShowDropdown(false)
       
-      // 실시간 업데이트 콜백 호출
+      // 즉시 업데이트 콜백 호출
+      if (onScoreAdded) {
+        onScoreAdded()
+      }
+      
+      // UI 피드백을 위한 지연된 모달 닫기
       setTimeout(() => {
         setIsOpen(false)
-        if (onScoreAdded) {
-          onScoreAdded()
-        }
       }, 1500)
 
     } catch (err) {
