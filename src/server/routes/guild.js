@@ -1,5 +1,5 @@
 import express from 'express';
-import { getGuilds, getGuild, addGuild } from '../database/guilds.js';
+import { getGuilds, getGuild, addGuild } from '../../database/guilds.js';
 
 const router = express.Router();
 
