@@ -23,6 +23,7 @@ import Link from "next/link"
 import { EnhancedScoreManagement } from "@/components/enhanced-score-management-v2"
 import { EventToggle } from "@/components/event-toggle"
 import { LeaderboardWithModal } from "@/components/leaderboard-with-modal"
+import { PublicRankingShare } from "@/components/public-ranking-share"
 
 interface Event {
   id: number
@@ -271,14 +272,17 @@ export function RealTimeEventDetail({
               </div>
             </div>
             
-            {userIsAdmin && event && (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="flex gap-2">
-                  <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} onScoreAdded={fetchEventData} />
-                  <EventToggle event={event} userIsAdmin={userIsAdmin} onToggle={fetchEventData} />
-                </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex gap-2">
+                <PublicRankingShare eventName={event.event_name} eventId={event.id} />
+                {userIsAdmin && (
+                  <>
+                    <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} onScoreAdded={fetchEventData} />
+                    <EventToggle event={event} userIsAdmin={userIsAdmin} onToggle={fetchEventData} />
+                  </>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {event.description && (
