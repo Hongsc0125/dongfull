@@ -104,7 +104,7 @@ export function UserHistoryModal({
   const calculateStats = () => {
     if (entries.length === 0) return { total: 0, average: 0, best: 0, aggregated: 0 }
     
-    const scores = entries.map(e => e.score)
+    const scores = entries.map(e => parseFloat(e.score.toString()))
     const total = scores.reduce((sum, score) => sum + score, 0)
     const average = total / entries.length
     // sortDirection에 따라 베스트 점수 결정
