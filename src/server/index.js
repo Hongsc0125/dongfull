@@ -12,6 +12,7 @@ import { apiLogger } from '../utils/logger.js';
 import logsRouter from './routes/logs.js';
 import guildRouter from './routes/guild.js';
 import eventDetailRouter from './routes/event-detail.js';
+import publicRouter from './routes/public.js';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use(express.json());
 app.use('/api/logs', logsRouter);
 app.use('/api/guild', guildRouter);
 app.use('/api/event-detail', eventDetailRouter);
+app.use('/api/public', publicRouter);
 
 // API 요청 로깅 미들웨어
 app.use((req, res, next) => {
