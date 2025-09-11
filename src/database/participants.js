@@ -44,12 +44,41 @@ export async function getParticipants(eventId) {
 
 export async function getParticipant(eventId, userId) {
     try {
-        const result = await db.query(`
-            SELECT * FROM participants 
-            WHERE event_id = $1 AND user_id = $2
+        // 참가자 정보와 기록 내역을 함께 조회
+        const participantResult = await db.query(`
+            SELECT 
+                p.*,
+                p.entries_count as entry_count,
+                COALESCE(gm.display_name, p.username) as display_name
+            FROM participants p
+            LEFT JOIN guild_members gm ON p.user_id = gm.user_id AND gm.guild_id = (
+                SELECT guild_id FROM events WHERE id = $1
+            )
+            WHERE p.event_id = $1 AND p.user_id = $2
         `, [eventId, userId]);
 
-        return result.rows[0];
+        if (participantResult.rows.length === 0) {
+            return null;
+        }
+
+        const participant = participantResult.rows[0];
+
+        // 해당 참가자의 모든 기록 조회
+        const entriesResult = await db.query(`
+            SELECT 
+                id,
+                score,
+                note,
+                added_by,
+                created_at
+            FROM score_entries 
+            WHERE participant_id = $1
+            ORDER BY created_at DESC
+        `, [participant.id]);
+
+        participant.entries = entriesResult.rows;
+
+        return participant;
     } catch (error) {
         console.error('Error getting participant:', error);
         throw error;
@@ -162,6 +191,7 @@ export async function getLeaderboard(eventId, limit = 999) {
             FROM (
                 SELECT 
                     p.*,
+                    p.entries_count as entry_count,
                     COALESCE(gm.display_name, p.username) as display_name,
                     ${scoreQuery}
                 FROM participants p
