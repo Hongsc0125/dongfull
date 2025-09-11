@@ -100,7 +100,7 @@ export function UserHistoryModal({
   }
 
   const calculateStats = () => {
-    if (entries.length === 0) return { total: 0, average: 0, best: 0 }
+    if (entries.length === 0) return { total: 0, average: 0, best: 0, aggregated: 0 }
     
     const scores = entries.map(e => e.score)
     const total = scores.reduce((sum, score) => sum + score, 0)
@@ -109,7 +109,23 @@ export function UserHistoryModal({
       ? Math.min(...scores)
       : Math.max(...scores)
     
-    return { total, average, best }
+    // 집계 방식에 따른 최종 점수 계산
+    let aggregated = 0
+    switch (aggregationType) {
+      case 'sum':
+        aggregated = total
+        break
+      case 'average':
+        aggregated = average
+        break
+      case 'best':
+        aggregated = best
+        break
+      default:
+        aggregated = total
+    }
+    
+    return { total, average, best, aggregated }
   }
 
   const stats = calculateStats()
@@ -155,28 +171,38 @@ export function UserHistoryModal({
               <Card>
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <ScoreIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium">{getAggregationLabel(aggregationType)}</span>
+                    <ScoreIcon className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-900">
+                      {getAggregationLabel(aggregationType)} 점수
+                    </span>
                   </div>
-                  <div className="text-2xl font-bold">
-                    {aggregationType === 'sum' && formatScore(stats.total, scoreType)}
-                    {aggregationType === 'average' && formatScore(stats.average, scoreType)}
-                    {aggregationType === 'best' && formatScore(stats.best, scoreType)}
+                  <div className="text-2xl font-bold text-blue-600">
+                    {formatScore(stats.aggregated, scoreType)}
                   </div>
+                  {aggregationType === 'average' && entries.length > 1 && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      총합: {formatScore(stats.total, scoreType)}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-gray-500" />
+                    <Trophy className="h-4 w-4 text-yellow-600" />
                     <span className="text-sm font-medium">
                       {scoreType === 'time_seconds' ? '최단 기록' : '최고 점수'}
                     </span>
                   </div>
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-bold text-yellow-600">
                     {formatScore(stats.best, scoreType)}
                   </div>
+                  {aggregationType !== 'best' && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      개인 베스트
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -189,25 +215,44 @@ export function UserHistoryModal({
                   아직 기록이 없습니다.
                 </div>
               ) : (
-                entries.map((entry, index) => (
-                  <Card key={entry.id} className="bg-slate-50 dark:bg-slate-800">
-                    <CardContent className="pt-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline">
-                            #{entries.length - index}
-                          </Badge>
-                          <div>
-                            <div className="font-semibold">
-                              {formatScore(entry.score, scoreType)}
-                            </div>
-                            {entry.note && (
-                              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {entry.note}
+                entries.map((entry, index) => {
+                  const isBestScore = entry.score === stats.best
+                  const isHighlighted = (aggregationType === 'best' && isBestScore)
+                  
+                  return (
+                    <Card 
+                      key={entry.id} 
+                      className={`${
+                        isHighlighted 
+                          ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' 
+                          : 'bg-slate-50 dark:bg-slate-800'
+                      }`}
+                    >
+                      <CardContent className="pt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Badge 
+                              variant={isHighlighted ? "default" : "outline"}
+                              className={isHighlighted ? "bg-yellow-500 text-white" : ""}
+                            >
+                              #{entries.length - index}
+                              {isHighlighted && aggregationType === 'best' && (
+                                <Trophy className="ml-1 h-3 w-3" />
+                              )}
+                            </Badge>
+                            <div>
+                              <div className={`font-semibold ${
+                                isHighlighted ? 'text-yellow-800 dark:text-yellow-200' : ''
+                              }`}>
+                                {formatScore(entry.score, scoreType)}
                               </div>
-                            )}
+                              {entry.note && (
+                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                  {entry.note}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
                         <div className="text-right">
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
@@ -223,11 +268,12 @@ export function UserHistoryModal({
                               by {entry.added_by}
                             </div>
                           )}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                      </CardContent>
+                    </Card>
+                  )
+                })
               )}
             </div>
           </div>
