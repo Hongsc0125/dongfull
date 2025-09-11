@@ -11,6 +11,7 @@ interface Event {
   event_name: string
   score_type: 'points' | 'time_seconds'
   score_aggregation: 'sum' | 'average' | 'best'
+  sort_direction: 'asc' | 'desc'
   is_active: boolean
 }
 
@@ -197,6 +198,7 @@ export function LeaderboardWithModal({ event, leaderboard, userIsAdmin }: Leader
           eventName={event.event_name}
           scoreType={event.score_type}
           aggregationType={event.score_aggregation}
+          sortDirection={event.sort_direction}
         />
       )}
     </>

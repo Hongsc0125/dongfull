@@ -23,6 +23,7 @@ interface UserHistoryModalProps {
   eventName: string
   scoreType: 'points' | 'time_seconds'
   aggregationType: string
+  sortDirection: 'asc' | 'desc'
 }
 
 function formatScore(score: number, scoreType: string) {
@@ -68,7 +69,8 @@ export function UserHistoryModal({
   eventId, 
   eventName, 
   scoreType, 
-  aggregationType 
+  aggregationType,
+  sortDirection
 }: UserHistoryModalProps) {
   const [entries, setEntries] = useState<ScoreEntry[]>([])
   const [loading, setLoading] = useState(false)
@@ -105,9 +107,10 @@ export function UserHistoryModal({
     const scores = entries.map(e => e.score)
     const total = scores.reduce((sum, score) => sum + score, 0)
     const average = total / entries.length
-    const best = scoreType === 'time_seconds' 
-      ? Math.min(...scores)
-      : Math.max(...scores)
+    // sortDirection에 따라 베스트 점수 결정
+    const best = sortDirection === 'desc' 
+      ? Math.max(...scores)  // 높은 점수가 좋음
+      : Math.min(...scores)  // 낮은 점수가 좋음
     
     // 집계 방식에 따른 최종 점수 계산
     let aggregated = 0
@@ -192,7 +195,7 @@ export function UserHistoryModal({
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="h-4 w-4 text-yellow-600" />
                     <span className="text-sm font-medium">
-                      {scoreType === 'time_seconds' ? '최단 기록' : '최고 점수'}
+                      {sortDirection === 'desc' ? '최고 기록' : '최소 기록'}
                     </span>
                   </div>
                   <div className="text-2xl font-bold text-yellow-600">
