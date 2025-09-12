@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Event Board - Discord 이벤트 랭킹",
   description: "Discord 서버 이벤트 관리 및 랭킹 시스템",
+  icons: {
+    icon: '/api/static/king.svg',
+    shortcut: '/api/static/king.svg',
+    apple: '/api/static/king.svg',
+  },
 };
 
 export default async function RootLayout({
