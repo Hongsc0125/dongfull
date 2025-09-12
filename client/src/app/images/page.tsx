@@ -12,7 +12,12 @@ export default function ImagesPage() {
     {
       name: 'king.svg',
       path: '/api/static/king.svg',
-      description: '왕관/1위 아이콘'
+      description: '왕관/1위 아이콘 (SVG)'
+    },
+    {
+      name: 'crown.png',
+      path: '/api/static/crown.png',
+      description: '왕관/1위 아이콘 (PNG) - Discord 봇용'
     }
   ];
 
