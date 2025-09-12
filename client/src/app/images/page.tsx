@@ -8,6 +8,11 @@ export default function ImagesPage() {
       name: 'alarm.svg',
       path: '/api/static/alarm.svg',
       description: '알람/이벤트 아이콘'
+    },
+    {
+      name: 'king.svg',
+      path: '/api/static/king.svg',
+      description: '왕관/1위 아이콘'
     }
   ];
 
