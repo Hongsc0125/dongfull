@@ -24,6 +24,7 @@ import { EnhancedScoreManagement } from "@/components/enhanced-score-management-
 import { EventToggle } from "@/components/event-toggle"
 import { LeaderboardWithModal } from "@/components/leaderboard-with-modal"
 import { PublicRankingShare } from "@/components/public-ranking-share"
+import { EventEditDialog } from "@/components/event-edit-dialog"
 
 interface Event {
   id: number
@@ -277,6 +278,12 @@ export function RealTimeEventDetail({
                 <PublicRankingShare eventName={event.event_name} eventId={event.id} />
                 {userIsAdmin && (
                   <>
+                    <EventEditDialog 
+                      event={event} 
+                      userIsAdmin={userIsAdmin} 
+                      onEventUpdated={fetchEventData}
+                      hasScoreEntries={stats.totalEntries > 0}
+                    />
                     <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} onScoreAdded={fetchEventData} />
                     <EventToggle event={event} userIsAdmin={userIsAdmin} onToggle={fetchEventData} />
                   </>
@@ -374,6 +381,7 @@ export function RealTimeEventDetail({
           event={event}
           leaderboard={leaderboard}
           userIsAdmin={userIsAdmin}
+          onDataUpdated={fetchEventData}
         />
 
         {/* Discord Commands Info */}

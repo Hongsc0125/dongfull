@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { initDatabase } from '../database/init.js';
-import { getEvents, getEventById, createEvent, updateEventStatus } from '../database/events.js';
-import { getLeaderboard, addParticipant, getParticipant, updateParticipantScore } from '../database/participants.js';
+import { initDatabase, db } from '../database/init.js';
+import { getEvents, getEventById, createEvent, updateEventStatus, updateEvent } from '../database/events.js';
+import { getLeaderboard, addParticipant, getParticipant, updateParticipantScore, updateScoreEntry, deleteScoreEntry, getScoreEntry } from '../database/participants.js';
 import { registerGuild } from '../database/guilds.js';
 import { getGuildMembers, searchGuildMembers } from '../database/guild-members.js';
 import { client } from '../bot/index.js';
@@ -305,6 +305,110 @@ app.get('/api/participants/history', async (req, res) => {
         });
     } catch (error) {
         apiLogger.error('Error fetching participant history:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 이벤트 정보 수정
+app.put('/api/events/:eventId', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const { event_name, description, score_type, sort_direction, score_aggregation } = req.body;
+        
+        // 유효성 검사
+        if (!event_name) {
+            return res.status(400).json({ error: 'Event name is required' });
+        }
+
+        // 점수 타입 변경 시 기존 점수가 있는지 확인
+        if (score_type) {
+            const participantCount = await db.query(`
+                SELECT COUNT(*) as count FROM participants 
+                WHERE event_id = $1 AND entries_count > 0
+            `, [eventId]);
+            
+            if (parseInt(participantCount.rows[0].count) > 0) {
+                return res.status(400).json({ 
+                    error: 'Cannot change score type when there are existing score entries' 
+                });
+            }
+        }
+
+        const updates = {};
+        if (event_name) updates.event_name = event_name;
+        if (description !== undefined) updates.description = description;
+        if (score_type) updates.score_type = score_type;
+        if (sort_direction) updates.sort_direction = sort_direction;
+        if (score_aggregation) updates.score_aggregation = score_aggregation;
+
+        const updatedEvent = await updateEvent(parseInt(eventId), updates);
+        
+        if (!updatedEvent) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+        
+        res.json(updatedEvent);
+    } catch (error) {
+        apiLogger.error('Error updating event:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 점수 기록 수정
+app.put('/api/score-entries/:entryId', async (req, res) => {
+    try {
+        const { entryId } = req.params;
+        const { score, note } = req.body;
+        
+        if (score === undefined) {
+            return res.status(400).json({ error: 'Score is required' });
+        }
+
+        const updatedEntry = await updateScoreEntry(parseInt(entryId), parseFloat(score), note);
+        
+        if (!updatedEntry) {
+            return res.status(404).json({ error: 'Score entry not found' });
+        }
+        
+        res.json(updatedEntry);
+    } catch (error) {
+        apiLogger.error('Error updating score entry:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 점수 기록 삭제
+app.delete('/api/score-entries/:entryId', async (req, res) => {
+    try {
+        const { entryId } = req.params;
+        
+        const deletedEntry = await deleteScoreEntry(parseInt(entryId));
+        
+        if (!deletedEntry) {
+            return res.status(404).json({ error: 'Score entry not found' });
+        }
+        
+        res.json({ message: 'Score entry deleted successfully', entry: deletedEntry });
+    } catch (error) {
+        apiLogger.error('Error deleting score entry:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 특정 점수 기록 조회
+app.get('/api/score-entries/:entryId', async (req, res) => {
+    try {
+        const { entryId } = req.params;
+        
+        const entry = await getScoreEntry(parseInt(entryId));
+        
+        if (!entry) {
+            return res.status(404).json({ error: 'Score entry not found' });
+        }
+        
+        res.json(entry);
+    } catch (error) {
+        apiLogger.error('Error fetching score entry:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

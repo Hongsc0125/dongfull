@@ -28,6 +28,7 @@ interface LeaderboardWithModalProps {
   event: Event
   leaderboard: Participant[]
   userIsAdmin: boolean
+  onDataUpdated?: () => void
 }
 
 function getRankEmoji(rank: number) {
@@ -80,7 +81,7 @@ function getAggregationDisplay(aggregation: string) {
   }
 }
 
-export function LeaderboardWithModal({ event, leaderboard, userIsAdmin }: LeaderboardWithModalProps) {
+export function LeaderboardWithModal({ event, leaderboard, userIsAdmin, onDataUpdated }: LeaderboardWithModalProps) {
   const [selectedUser, setSelectedUser] = useState<{
     userId: string
     userName: string
@@ -199,6 +200,8 @@ export function LeaderboardWithModal({ event, leaderboard, userIsAdmin }: Leader
           scoreType={event.score_type}
           aggregationType={event.score_aggregation}
           sortDirection={event.sort_direction}
+          userIsAdmin={userIsAdmin}
+          onEntryUpdated={onDataUpdated}
         />
       )}
     </>

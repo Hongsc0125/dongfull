@@ -210,3 +210,126 @@ export async function getParticipantScoreHistory(participantId) {
         throw error;
     }
 }
+
+export async function updateScoreEntry(entryId, newScore, note = null) {
+    try {
+        await db.query('BEGIN');
+
+        // Get the old score and participant info
+        const oldEntryResult = await db.query(`
+            SELECT se.*, p.id as participant_id, e.score_aggregation
+            FROM score_entries se
+            JOIN participants p ON se.participant_id = p.id
+            JOIN events e ON p.event_id = e.id
+            WHERE se.id = $1
+        `, [entryId]);
+
+        if (oldEntryResult.rows.length === 0) {
+            throw new Error('Score entry not found');
+        }
+
+        const oldEntry = oldEntryResult.rows[0];
+        const scoreDifference = newScore - oldEntry.score;
+
+        // Update the score entry
+        await db.query(`
+            UPDATE score_entries 
+            SET score = $2, note = $3, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+        `, [entryId, newScore, note]);
+
+        // Update participant total_score only for sum/average aggregation
+        if (oldEntry.score_aggregation === 'sum' || oldEntry.score_aggregation === 'average') {
+            await db.query(`
+                UPDATE participants 
+                SET total_score = total_score + $2,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+            `, [oldEntry.participant_id, scoreDifference]);
+        }
+
+        await db.query('COMMIT');
+
+        // Return updated entry
+        const result = await db.query(`
+            SELECT * FROM score_entries WHERE id = $1
+        `, [entryId]);
+
+        return result.rows[0];
+    } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Error updating score entry:', error);
+        throw error;
+    }
+}
+
+export async function deleteScoreEntry(entryId) {
+    try {
+        await db.query('BEGIN');
+
+        // Get the entry info before deletion
+        const entryResult = await db.query(`
+            SELECT se.*, p.id as participant_id, e.score_aggregation
+            FROM score_entries se
+            JOIN participants p ON se.participant_id = p.id
+            JOIN events e ON p.event_id = e.id
+            WHERE se.id = $1
+        `, [entryId]);
+
+        if (entryResult.rows.length === 0) {
+            throw new Error('Score entry not found');
+        }
+
+        const entry = entryResult.rows[0];
+
+        // Delete the score entry
+        await db.query(`
+            DELETE FROM score_entries WHERE id = $1
+        `, [entryId]);
+
+        // Update participant stats
+        // For sum/average: subtract the score from total_score
+        if (entry.score_aggregation === 'sum' || entry.score_aggregation === 'average') {
+            await db.query(`
+                UPDATE participants 
+                SET total_score = total_score - $2,
+                    entries_count = entries_count - 1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+            `, [entry.participant_id, entry.score]);
+        } else {
+            // For best: just decrease entries_count
+            await db.query(`
+                UPDATE participants 
+                SET entries_count = entries_count - 1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+            `, [entry.participant_id]);
+        }
+
+        await db.query('COMMIT');
+
+        return entry;
+    } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Error deleting score entry:', error);
+        throw error;
+    }
+}
+
+export async function getScoreEntry(entryId) {
+    try {
+        const result = await db.query(`
+            SELECT se.*, p.username, p.user_id, e.event_name
+            FROM score_entries se
+            JOIN participants p ON se.participant_id = p.id
+            JOIN events e ON p.event_id = e.id
+            WHERE se.id = $1
+        `, [entryId]);
+
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error getting score entry:', error);
+        throw error;
+    }
+}

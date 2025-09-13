@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Trophy, Clock, Target, Calendar, User, BarChart3, Activity } from "lucide-react"
+import { ScoreEntryActions } from "./score-entry-actions"
 
 interface ScoreEntry {
   id: number
@@ -24,6 +25,8 @@ interface UserHistoryModalProps {
   scoreType: 'points' | 'time_seconds'
   aggregationType: string
   sortDirection: 'asc' | 'desc'
+  userIsAdmin?: boolean
+  onEntryUpdated?: () => void
 }
 
 function formatScore(score: number, scoreType: string, isAverage: boolean = false) {
@@ -83,7 +86,9 @@ export function UserHistoryModal({
   eventName, 
   scoreType, 
   aggregationType,
-  sortDirection
+  sortDirection,
+  userIsAdmin = false,
+  onEntryUpdated
 }: UserHistoryModalProps) {
   const [entries, setEntries] = useState<ScoreEntry[]>([])
   const [loading, setLoading] = useState(false)
@@ -310,20 +315,35 @@ export function UserHistoryModal({
                               )}
                             </div>
                           </div>
-                        <div className="text-right">
-                          <div className="text-sm text-gray-500 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(entry.created_at).toLocaleString('ko-KR', {
-                              month: 'numeric',
-                              day: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            })}
-                          </div>
-                          {entry.added_by && (
-                            <div className="text-xs text-gray-400 mt-1">
-                              by {entry.added_by}
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="text-sm text-gray-500 flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(entry.created_at).toLocaleString('ko-KR', {
+                                month: 'numeric',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
                             </div>
+                            {entry.added_by && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                by {entry.added_by}
+                              </div>
+                            )}
+                          </div>
+                          {userIsAdmin && (
+                            <ScoreEntryActions
+                              entry={entry}
+                              scoreType={scoreType}
+                              userIsAdmin={userIsAdmin}
+                              onEntryUpdated={() => {
+                                fetchUserEntries();
+                                if (onEntryUpdated) {
+                                  onEntryUpdated();
+                                }
+                              }}
+                            />
                           )}
                           </div>
                         </div>
