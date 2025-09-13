@@ -15,7 +15,17 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog"
-import { Edit2, Settings, AlertCircle, Loader2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Edit2, Settings, AlertCircle, Loader2, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface Event {
@@ -34,10 +44,11 @@ interface EventEditDialogProps {
   event: Event
   userIsAdmin: boolean
   onEventUpdated?: () => void
+  onEventDeleted?: () => void
   hasScoreEntries?: boolean
 }
 
-export function EventEditDialog({ event, userIsAdmin, onEventUpdated, hasScoreEntries = false }: EventEditDialogProps) {
+export function EventEditDialog({ event, userIsAdmin, onEventUpdated, onEventDeleted, hasScoreEntries = false }: EventEditDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [eventName, setEventName] = useState(event.event_name)
   const [description, setDescription] = useState(event.description || "")
@@ -47,6 +58,9 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, hasScoreEn
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [confirmationText, setConfirmationText] = useState("")
+  const [deleting, setDeleting] = useState(false)
 
   if (!userIsAdmin) {
     return null
@@ -114,6 +128,42 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, hasScoreEn
     }
   }
 
+  const handleDelete = async () => {
+    if (confirmationText !== event.event_name) {
+      setError("이벤트 이름이 일치하지 않습니다.")
+      return
+    }
+
+    setDeleting(true)
+    setError("")
+
+    try {
+      const response = await fetch(`/api/events/${event.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete event')
+      }
+
+      const result = await response.json()
+      
+      // 삭제 성공 시 콜백 호출 (리스트 새로고침 등)
+      if (onEventDeleted) {
+        onEventDeleted()
+      }
+      
+      setDeleteOpen(false)
+      setIsOpen(false)
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '이벤트 삭제 중 오류가 발생했습니다.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const formatScoreType = (type: string) => {
     return type === 'points' ? '포인트' : '시간 (초)'
   }
@@ -132,6 +182,7 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, hasScoreEn
   }
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
@@ -251,32 +302,117 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, hasScoreEn
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex justify-between">
           <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
+            variant="destructive"
+            onClick={() => setDeleteOpen(true)}
             disabled={loading}
+            className="mr-auto"
           >
-            취소
+            <Trash2 className="mr-2 h-4 w-4" />
+            삭제
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !eventName.trim()}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                업데이트 중...
-              </>
-            ) : (
-              <>
-                <Settings className="mr-2 h-4 w-4" />
-                업데이트
-              </>
-            )}
-          </Button>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={loading}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !eventName.trim()}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  업데이트 중...
+                </>
+              ) : (
+                <>
+                  <Settings className="mr-2 h-4 w-4" />
+                  업데이트
+                </>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* 삭제 확인 다이얼로그 */}
+    <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-red-600">⚠️ 이벤트 삭제 확인</AlertDialogTitle>
+          <AlertDialogDescription className="space-y-4">
+            <div>
+              <strong className="text-red-700">이 작업은 되돌릴 수 없습니다!</strong>
+            </div>
+            <div>
+              이벤트 <strong>"{event.event_name}"</strong>와 관련된 모든 데이터가 영구적으로 삭제됩니다:
+            </div>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>모든 참가자 정보</li>
+              <li>모든 점수 기록</li>
+              <li>이벤트 설정 및 메타데이터</li>
+            </ul>
+            <div className="border-t pt-4">
+              <div className="font-medium mb-2">
+                계속하려면 이벤트 이름을 정확히 입력하세요:
+              </div>
+              <Input
+                placeholder={event.event_name}
+                value={confirmationText}
+                onChange={(e) => setConfirmationText(e.target.value)}
+                className={`${confirmationText === event.event_name ? 'border-green-500' : 'border-red-300'}`}
+              />
+              {confirmationText !== event.event_name && confirmationText.length > 0 && (
+                <p className="text-xs text-red-600 mt-1">이벤트 이름이 일치하지 않습니다</p>
+              )}
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        <AlertDialogFooter>
+          <AlertDialogCancel 
+            disabled={deleting}
+            onClick={() => {
+              setConfirmationText("")
+              setError("")
+            }}
+          >
+            취소
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={deleting || confirmationText !== event.event_name}
+            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+          >
+            {deleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                삭제 중...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                영구 삭제
+              </>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   )
 }

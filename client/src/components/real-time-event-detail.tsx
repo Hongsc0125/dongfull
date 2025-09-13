@@ -20,6 +20,7 @@ import {
   RefreshCw
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { EnhancedScoreManagement } from "@/components/enhanced-score-management-v2"
 import { EventToggle } from "@/components/event-toggle"
 import { LeaderboardWithModal } from "@/components/leaderboard-with-modal"
@@ -159,6 +160,7 @@ export function RealTimeEventDetail({
   initialStats, 
   userIsAdmin 
 }: RealTimeEventDetailProps) {
+  const router = useRouter()
   const [event, setEvent] = useState<Event>(initialEvent)
   const [leaderboard, setLeaderboard] = useState<Participant[]>(initialLeaderboard)
   const [stats, setStats] = useState(initialStats)
@@ -199,6 +201,11 @@ export function RealTimeEventDetail({
   // 수동 새로고침
   const handleManualRefresh = () => {
     fetchEventData()
+  }
+
+  // 이벤트 삭제 후 길드 페이지로 이동
+  const handleEventDeleted = () => {
+    router.push(`/guild/${guildId}`)
   }
 
   const scoreTypeInfo = getScoreTypeDisplay(event.score_type)
@@ -282,6 +289,7 @@ export function RealTimeEventDetail({
                       event={event} 
                       userIsAdmin={userIsAdmin} 
                       onEventUpdated={fetchEventData}
+                      onEventDeleted={handleEventDeleted}
                       hasScoreEntries={stats.totalEntries > 0}
                     />
                     <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} onScoreAdded={fetchEventData} />

@@ -119,6 +119,17 @@ export async function initDatabase() {
             console.log('score_aggregation column already exists or error adding it:', error.message);
         }
 
+        // Add updated_at column to score_entries if it doesn't exist (for existing databases)
+        try {
+            await pool.query(`
+                ALTER TABLE score_entries 
+                ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            `);
+        } catch (error) {
+            // Ignore error if column already exists
+            console.log('updated_at column already exists or error adding it:', error.message);
+        }
+
         // Create indexes
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_events_guild_id ON events(guild_id)`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_participants_event_id ON participants(event_id)`);

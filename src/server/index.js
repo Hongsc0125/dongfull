@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { initDatabase, db } from '../database/init.js';
-import { getEvents, getEventById, createEvent, updateEventStatus, updateEvent } from '../database/events.js';
+import { getEvents, getEventById, createEvent, updateEventStatus, updateEvent, deleteEvent } from '../database/events.js';
 import { getLeaderboard, addParticipant, getParticipant, updateParticipantScore, updateScoreEntry, deleteScoreEntry, getScoreEntry } from '../database/participants.js';
 import { registerGuild } from '../database/guilds.js';
 import { getGuildMembers, searchGuildMembers } from '../database/guild-members.js';
@@ -409,6 +409,46 @@ app.get('/api/score-entries/:entryId', async (req, res) => {
         res.json(entry);
     } catch (error) {
         apiLogger.error('Error fetching score entry:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// 이벤트 삭제
+app.delete('/api/events/:eventId', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        
+        // 먼저 이벤트가 존재하는지 확인
+        const event = await getEventById(parseInt(eventId));
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // 참가자 수와 총 점수 기록 수 확인
+        const stats = await db.query(`
+            SELECT 
+                COUNT(DISTINCT p.id) as participant_count,
+                COUNT(se.id) as total_entries
+            FROM participants p
+            LEFT JOIN score_entries se ON p.id = se.participant_id
+            WHERE p.event_id = $1
+        `, [eventId]);
+
+        const { participant_count, total_entries } = stats.rows[0];
+
+        // 이벤트 삭제 실행
+        const deletedEvent = await deleteEvent(parseInt(eventId));
+        
+        res.json({ 
+            message: 'Event deleted successfully',
+            event: deletedEvent,
+            deleted_stats: {
+                participants: parseInt(participant_count),
+                score_entries: parseInt(total_entries)
+            }
+        });
+    } catch (error) {
+        apiLogger.error('Error deleting event:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
