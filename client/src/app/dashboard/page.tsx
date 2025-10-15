@@ -65,9 +65,38 @@ export default async function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Mobile Header */}
+        <div className="block sm:hidden mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={session.user?.image || ''} />
+                <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {session.user?.name || '사용자'}님
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Event Board
+                </p>
+              </div>
+            </div>
+
+            <form action={async () => {
+              "use server"
+              await signOut()
+            }}>
+              <Button variant="outline" size="sm" type="submit">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden sm:flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src={session.user?.image || ''} />
@@ -94,8 +123,39 @@ export default async function Dashboard() {
           </form>
         </div>
 
-        {/* Guild Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Mobile Stats */}
+        <div className="block sm:hidden mb-6">
+          <div className="grid grid-cols-3 gap-3">
+            <Card className="p-3">
+              <div className="text-center">
+                <Server className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-lg font-bold">{guilds.length}</div>
+                <p className="text-xs text-muted-foreground">총 서버</p>
+              </div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-center">
+                <Crown className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-lg font-bold">
+                  {guilds.filter(guild => isAdmin(guild)).length}
+                </div>
+                <p className="text-xs text-muted-foreground">관리자</p>
+              </div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-center">
+                <Users className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-lg font-bold">
+                  {guilds.filter(guild => !isAdmin(guild)).length}
+                </div>
+                <p className="text-xs text-muted-foreground">일반</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* Desktop Stats */}
+        <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">총 서버</CardTitle>
@@ -140,8 +200,78 @@ export default async function Dashboard() {
           </Card>
         </div>
 
-        {/* Server List */}
-        <Card>
+        {/* Mobile Server List */}
+        <div className="block sm:hidden">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              서버 목록
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              서버를 터치하여 이벤트를 확인하세요
+            </p>
+          </div>
+
+          {guilds.length === 0 ? (
+            <Card className="p-6">
+              <div className="text-center">
+                <Server className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  봇이 설치된 서버가 없습니다
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Event Board 봇을 Discord 서버에 초대해보세요
+                </p>
+                <Button className="bg-[#5865F2] hover:bg-[#4752C4] w-full">
+                  봇 초대하기
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {guilds.map((guild) => (
+                <Link key={guild.id} href={`/guild/${guild.id}`}>
+                  <Card className="hover:shadow-md transition-all cursor-pointer active:scale-95">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12 flex-shrink-0">
+                          <AvatarImage src={getGuildIconUrl(guild) || ''} />
+                          <AvatarFallback>
+                            {guild.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                            {guild.name}
+                          </h3>
+                          <div className="flex items-center gap-1 mt-1 overflow-hidden">
+                            {guild.owner && (
+                              <Badge variant="default" className="text-xs px-1">
+                                <Crown className="h-3 w-3" />
+                              </Badge>
+                            )}
+                            {isAdmin(guild) && !guild.owner && (
+                              <Badge variant="secondary" className="text-xs px-1">
+                                <Settings className="h-3 w-3" />
+                              </Badge>
+                            )}
+                            {!isAdmin(guild) && (
+                              <Badge variant="outline" className="text-xs px-1">
+                                <Users className="h-3 w-3" />
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Server List */}
+        <Card className="hidden sm:block">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Server className="h-5 w-5" />

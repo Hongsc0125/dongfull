@@ -106,7 +106,7 @@ export function ScoreManagement({ event, userIsAdmin }: ScoreManagementProps) {
           점수 추가
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-w-[95vw] mx-4">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" />

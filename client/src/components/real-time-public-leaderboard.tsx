@@ -149,16 +149,103 @@ export function RealTimePublicLeaderboard({
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
       
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Mobile Header */}
+        <div className="block sm:hidden text-center mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+              <Sparkles className="h-4 w-4 text-yellow-400" />
+              <span className="text-white/90 font-medium text-sm">실시간</span>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="bg-white/10 hover:bg-white/20 border-white/20 text-white px-3"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+
+          <h1 className="text-2xl font-bold text-white mb-3 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent leading-tight">
+            {event.event_name}
+          </h1>
+
+          {event.description && (
+            <p className="text-sm text-white/80 mb-4 px-2">
+              {event.description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+            {event.guild_name && (
+              <Badge variant="outline" className="px-2 py-1 bg-white/10 text-white border-white/30 text-xs">
+                {event.guild_name}
+              </Badge>
+            )}
+
+            <Badge variant="outline" className="px-2 py-1 bg-white/10 text-white border-white/30 text-xs">
+              <ScoreIcon className="mr-1 h-3 w-3" />
+              {event.score_type === 'points' ? '포인트' : '시간'}
+            </Badge>
+
+            <Badge variant="outline" className="px-2 py-1 bg-white/10 text-white border-white/30 text-xs">
+              <AggIcon className="mr-1 h-3 w-3" />
+              {aggregationInfo.label}
+            </Badge>
+
+            <Badge
+              variant={event.is_active ? "default" : "secondary"}
+              className={cn("px-2 py-1 text-xs",
+                event.is_active
+                  ? "bg-green-500/20 text-green-300 border-green-500/50"
+                  : "bg-red-500/20 text-red-300 border-red-500/50"
+              )}
+            >
+              {event.is_active ? '진행중' : '종료'}
+            </Badge>
+          </div>
+
+          {/* Mobile Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+              <Users className="h-4 w-4 text-white/80 mx-auto mb-1" />
+              <div className="text-lg font-bold text-white">{stats.participantCount}</div>
+              <div className="text-xs text-white/70">참가자</div>
+            </div>
+            <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+              <BarChart3 className="h-4 w-4 text-white/80 mx-auto mb-1" />
+              <div className="text-lg font-bold text-white">{stats.totalEntries}</div>
+              <div className="text-xs text-white/70">총 기록</div>
+            </div>
+            <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+              <Calendar className="h-4 w-4 text-white/80 mx-auto mb-1" />
+              <div className="text-sm font-bold text-white">
+                {new Date(event.created_at).toLocaleDateString('ko-KR', {
+                  month: 'short',
+                  day: 'numeric'
+                })}
+              </div>
+              <div className="text-xs text-white/70">시작일</div>
+            </div>
+          </div>
+
+          <div className="text-xs text-white/60 mb-1">
+            마지막 업데이트: {lastUpdated.toLocaleTimeString()}
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden sm:block text-center mb-12">
           <div className="flex justify-between items-center mb-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
               <Sparkles className="h-5 w-5 text-yellow-400" />
               <span className="text-white/90 font-medium">실시간 랭킹</span>
               <Sparkles className="h-5 w-5 text-yellow-400" />
             </div>
-            
+
             <div className="flex items-center gap-2 text-sm text-white/70">
               <Button
                 variant="outline"
@@ -213,7 +300,7 @@ export function RealTimePublicLeaderboard({
             </Badge>
           </div>
           
-          {/* Stats */}
+          {/* Desktop Stats */}
           <div className="flex justify-center gap-8 text-white/80">
             <div className="text-center">
               <div className="flex items-center gap-2 mb-1">
@@ -222,7 +309,7 @@ export function RealTimePublicLeaderboard({
               </div>
               <div className="text-2xl font-bold text-white">{stats.participantCount}</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center gap-2 mb-1">
                 <BarChart3 className="h-4 w-4" />
@@ -230,24 +317,108 @@ export function RealTimePublicLeaderboard({
               </div>
               <div className="text-2xl font-bold text-white">{stats.totalEntries}</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="h-4 w-4" />
                 <span className="text-sm">시작일</span>
               </div>
               <div className="text-lg font-bold text-white">
-                {new Date(event.created_at).toLocaleDateString('ko-KR', { 
-                  month: 'short', 
-                  day: 'numeric' 
+                {new Date(event.created_at).toLocaleDateString('ko-KR', {
+                  month: 'short',
+                  day: 'numeric'
                 })}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Leaderboard */}
-        <div className="max-w-4xl mx-auto">
+        {/* Mobile Leaderboard */}
+        <div className="block sm:hidden">
+          {leaderboard.length === 0 ? (
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center py-12">
+              <CardContent>
+                <Trophy className="h-12 w-12 text-white/50 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-white mb-2">아직 참가자가 없습니다</h3>
+                <p className="text-sm text-white/70">첫 번째 참가자가 되어보세요!</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {leaderboard.map((participant, index) => {
+                const displayScore = participant.calculated_score !== undefined
+                  ? participant.calculated_score
+                  : participant.total_score
+
+                return (
+                  <Card
+                    key={participant.rank}
+                    className={cn(
+                      "relative overflow-hidden transition-all duration-300 border-0",
+                      participant.rank === 1 && "bg-gradient-to-r from-yellow-500/20 via-yellow-400/10 to-yellow-500/20",
+                      participant.rank === 2 && "bg-gradient-to-r from-gray-400/20 via-gray-300/10 to-gray-400/20",
+                      participant.rank === 3 && "bg-gradient-to-r from-amber-600/20 via-amber-500/10 to-amber-600/20",
+                      participant.rank > 3 && "bg-white/10"
+                    )}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm" />
+                    <CardContent className="relative p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            {participant.rank <= 3 ? getRankIcon(participant.rank) : (
+                              <div className="w-6 h-6 flex items-center justify-center">
+                                <span className="text-white/70 font-bold text-sm">#{participant.rank}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <h3 className="text-lg font-bold text-white drop-shadow-sm">
+                              {participant.display_name}
+                            </h3>
+                            <p className="text-xs text-white/70">
+                              {participant.entry_count}회 참여
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className={cn(
+                            "text-lg font-bold drop-shadow-sm",
+                            participant.rank === 1 && "text-yellow-400",
+                            participant.rank === 2 && "text-gray-300",
+                            participant.rank === 3 && "text-amber-500",
+                            participant.rank > 3 && "text-white"
+                          )}>
+                            {formatScore(displayScore, event.score_type, event.score_aggregation === 'average')}
+                          </div>
+                          {event.score_aggregation === 'average' && participant.entry_count > 1 && (
+                            <div className="text-xs text-white/60">
+                              평균 {participant.entry_count}회
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Mobile Share Button */}
+          <div className="mt-6 text-center">
+            <ShareButton
+              eventName={event.event_name}
+              eventId={eventId}
+              className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white"
+            />
+          </div>
+        </div>
+
+        {/* Desktop Leaderboard */}
+        <div className="hidden sm:block max-w-4xl mx-auto">
           {leaderboard.length === 0 ? (
             <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center py-16">
               <CardContent>

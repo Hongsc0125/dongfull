@@ -15,10 +15,11 @@ import { Input } from "@/components/ui/input"
 
 interface ShareButtonProps {
   eventName: string
-  eventId: number
+  eventId: number | string
+  className?: string
 }
 
-export function ShareButton({ eventName, eventId }: ShareButtonProps) {
+export function ShareButton({ eventName, eventId, className }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   
@@ -56,9 +57,9 @@ export function ShareButton({ eventName, eventId }: ShareButtonProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
+        <Button
           onClick={handleShare}
-          className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"
+          className={className || "bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm"}
           variant="outline"
         >
           <Share2 className="h-4 w-4 mr-2" />
@@ -66,7 +67,7 @@ export function ShareButton({ eventName, eventId }: ShareButtonProps) {
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-w-[95vw] mx-4">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
@@ -102,7 +103,7 @@ export function ShareButton({ eventName, eventId }: ShareButtonProps) {
           </Button>
         </div>
         
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-2 mt-4">
           <Button 
             variant="outline" 
             size="sm"

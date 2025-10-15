@@ -112,7 +112,7 @@ export function LeaderboardWithModal({ event, leaderboard, userIsAdmin, onDataUp
             </div>
             {userIsAdmin && event.is_active && (
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Discord에서 <code>/점수추가</code>로 점수를 추가할 수 있습니다
+                {/* Discord에서 <code>/점수추가</code>로 점수를 추가할 수 있습니다 */}
               </div>
             )}
           </div>
