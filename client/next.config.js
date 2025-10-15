@@ -18,10 +18,10 @@ const nextConfig = {
     BACKEND_URL: process.env.BACKEND_URL,
     NEXT_PUBLIC_BACKEND_URL: process.env.BACKEND_URL,
   },
-  // Cross-origin 경고 해결
-  experimental: {
-    allowedDevOrigins: ['evt-board.com', 'https://evt-board.com'],
-  },
+  // Cross-origin 경고 해결 - allowedDevOrigins는 더 이상 지원되지 않음
+  // experimental: {
+  //   allowedDevOrigins: ['evt-board.com', 'https://evt-board.com'],
+  // },
 }
 
 module.exports = nextConfig
