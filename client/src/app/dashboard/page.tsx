@@ -84,10 +84,10 @@ export default async function Dashboard() {
                 <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h1 className="text-lg font-bold text-foreground">
                   {session.user?.name || '사용자'}님
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-muted-foreground">
                   Event Board
                 </p>
               </div>
@@ -212,10 +212,10 @@ export default async function Dashboard() {
         {/* Mobile Server List */}
         <div className="block sm:hidden">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            <h2 className="text-lg font-semibold text-foreground mb-1">
               서버 목록
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-muted-foreground">
               서버를 터치하여 이벤트를 확인하세요
             </p>
           </div>
@@ -224,10 +224,10 @@ export default async function Dashboard() {
             <Card className="p-6">
               <div className="text-center">
                 <Server className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   서버 정보 로딩 중
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Discord API 요청이 많아 잠시 지연될 수 있습니다
                 </p>
                 <RefreshButton className="bg-[#5865F2] hover:bg-[#4752C4] w-full">
@@ -249,7 +249,7 @@ export default async function Dashboard() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                          <h3 className="font-medium text-foreground truncate">
                             {guild.name}
                           </h3>
                           <div className="flex items-center gap-1 mt-1 overflow-hidden">
@@ -294,10 +294,10 @@ export default async function Dashboard() {
             {guilds.length === 0 ? (
               <div className="text-center py-12">
                 <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   서버 정보를 불러오는 중입니다
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Discord API 요청이 많아 잠시 지연될 수 있습니다. 페이지를 새로고침해주세요.
                 </p>
                 <RefreshButton className="bg-[#5865F2] hover:bg-[#4752C4]">
@@ -318,7 +318,7 @@ export default async function Dashboard() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                            <h3 className="font-medium text-foreground truncate">
                               {guild.name}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">

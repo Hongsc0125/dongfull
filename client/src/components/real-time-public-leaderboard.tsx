@@ -548,11 +548,6 @@ export function RealTimePublicLeaderboard({
         <div className="text-center mt-16 space-y-6">
           <ShareButton eventName={event.event_name} eventId={event.id} />
           
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-            <Zap className="h-4 w-4 text-yellow-400" />
-            <span className="text-white/80 text-sm">5초마다 자동 업데이트</span>
-          </div>
-          
           <p className="text-white/50 text-sm">
             마지막 업데이트: {lastUpdated.toLocaleString('ko-KR')}
           </p>

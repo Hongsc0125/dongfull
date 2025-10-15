@@ -38,9 +38,9 @@ export default async function Home() {
         <div className="block sm:hidden text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">
             <Bot className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Event Board</h1>
+            <h1 className="text-3xl font-bold text-foreground">Event Board</h1>
           </div>
-          <p className="text-base text-gray-600 dark:text-gray-300 mb-6 px-4">
+          <p className="text-base text-muted-foreground mb-6 px-4">
             Discord 이벤트 관리 및 랭킹 시스템
           </p>
 
@@ -64,9 +64,9 @@ export default async function Home() {
         <div className="hidden sm:block text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Bot className="h-12 w-12 text-blue-600" />
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white">Event Board</h1>
+            <h1 className="text-5xl font-bold text-foreground">Event Board</h1>
           </div>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+          <p className="text-xl text-muted-foreground mb-8">
             Discord 이벤트 관리 및 랭킹 시스템
           </p>
           
