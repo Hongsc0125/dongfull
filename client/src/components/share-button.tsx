@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Share2, Copy, Check, ExternalLink } from "lucide-react"
 import { 
   Dialog, 
@@ -22,6 +23,7 @@ interface ShareButtonProps {
 export function ShareButton({ eventName, eventId, className }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [sharing, setSharing] = useState(false)
   
   const shareUrl = `${window.location.origin}/public/event/${eventId}`
   
@@ -41,6 +43,7 @@ export function ShareButton({ eventName, eventId, className }: ShareButtonProps)
 
   const handleNativeShare = async () => {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      setSharing(true)
       try {
         await navigator.share({
           title: `🏆 ${eventName} 랭킹`,
@@ -50,6 +53,8 @@ export function ShareButton({ eventName, eventId, className }: ShareButtonProps)
         setIsOpen(false) // 공유 성공 시 모달 닫기
       } catch (err) {
         console.log('Sharing failed:', err)
+      } finally {
+        setSharing(false)
       }
     }
   }
@@ -114,14 +119,16 @@ export function ShareButton({ eventName, eventId, className }: ShareButtonProps)
           </Button>
           
 {typeof navigator !== 'undefined' && 'share' in navigator && (
-            <Button 
-              variant="outline" 
+            <LoadingButton
+              variant="outline"
               size="sm"
               onClick={handleNativeShare}
+              loading={sharing}
+              loadingText="공유 중..."
             >
               <Share2 className="h-4 w-4 mr-2" />
               네이티브 공유
-            </Button>
+            </LoadingButton>
           )}
         </div>
       </DialogContent>

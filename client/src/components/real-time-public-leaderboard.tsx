@@ -7,6 +7,8 @@ import { Trophy, Crown, Medal, Target, Clock, Zap, Star, Calendar, Users, BarCha
 import { cn } from "@/lib/utils"
 import { ShareButton } from "./share-button"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
+import { InlineLoading } from "@/components/ui/loading-spinner"
 
 interface Event {
   id: number
@@ -158,15 +160,15 @@ export function RealTimePublicLeaderboard({
               <span className="text-white/90 font-medium text-sm">실시간</span>
             </div>
 
-            <Button
+            <LoadingButton
               variant="outline"
               size="sm"
               onClick={handleManualRefresh}
-              disabled={isRefreshing}
+              loading={isRefreshing}
               className="bg-white/10 hover:bg-white/20 border-white/20 text-white px-3"
             >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
+              <RefreshCw className="h-4 w-4" />
+            </LoadingButton>
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-3 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent leading-tight">
@@ -247,16 +249,17 @@ export function RealTimePublicLeaderboard({
             </div>
 
             <div className="flex items-center gap-2 text-sm text-white/70">
-              <Button
+              <LoadingButton
                 variant="outline"
                 size="sm"
                 onClick={handleManualRefresh}
-                disabled={isRefreshing}
+                loading={isRefreshing}
+                loadingText="새로고침 중..."
                 className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
               >
-                <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 새로고침
-              </Button>
+              </LoadingButton>
               <span>마지막 업데이트: {lastUpdated.toLocaleTimeString()}</span>
             </div>
           </div>

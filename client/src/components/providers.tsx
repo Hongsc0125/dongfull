@@ -1,17 +1,20 @@
 "use client"
 
 import { SessionProvider } from "next-auth/react"
+import { LoadingProvider } from "@/contexts/loading-context"
 
-export function Providers({ 
+export function Providers({
   children,
-  session 
+  session
 }: {
   children: React.ReactNode
   session: any
 }) {
   return (
     <SessionProvider session={session}>
-      {children}
+      <LoadingProvider>
+        {children}
+      </LoadingProvider>
     </SessionProvider>
   )
 }

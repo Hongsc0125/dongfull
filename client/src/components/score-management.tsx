@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
+import { SectionLoadingOverlay } from "@/components/ui/loading-overlay"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -117,6 +119,9 @@ export function ScoreManagement({ event, userIsAdmin }: ScoreManagementProps) {
           </DialogDescription>
         </DialogHeader>
 
+        {/* Loading Overlay */}
+        <SectionLoadingOverlay isVisible={loading} message="점수 추가 중..." />
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username" className="flex items-center gap-2">
@@ -173,9 +178,13 @@ export function ScoreManagement({ event, userIsAdmin }: ScoreManagementProps) {
             <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={loading}>
               취소
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "추가 중..." : "점수 추가"}
-            </Button>
+            <LoadingButton
+              type="submit"
+              loading={loading}
+              loadingText="추가 중..."
+            >
+              점수 추가
+            </LoadingButton>
           </DialogFooter>
         </form>
       </DialogContent>
