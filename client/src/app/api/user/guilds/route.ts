@@ -29,7 +29,14 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to fetch guilds')
+      console.error('Discord API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+      const errorText = await response.text()
+      console.error('Discord API error body:', errorText)
+      throw new Error(`Failed to fetch guilds: ${response.status} ${response.statusText}`)
     }
 
     const guilds = await response.json()
