@@ -6,6 +6,7 @@ import { Server, Users, LogOut, Crown, Settings } from "lucide-react"
 import { auth, signOut } from "../../../auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import { RefreshButton } from "@/components/refresh-button"
 
 interface Guild {
   id: string
@@ -19,14 +20,22 @@ async function getUserGuilds(): Promise<Guild[]> {
   try {
     const { headers } = await import('next/headers')
     const headersList = await headers()
-    
+
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3777'}/api/user/guilds`, {
       cache: 'no-store',
       headers: {
         cookie: headersList.get('cookie') || '',
       },
     })
-    if (!response.ok) throw new Error('Failed to fetch guilds')
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        console.log('Rate limited, returning empty guilds list')
+        return []
+      }
+      throw new Error(`Failed to fetch guilds: ${response.status}`)
+    }
+
     return await response.json()
   } catch (error) {
     console.error('Error fetching user guilds:', error)
@@ -216,14 +225,14 @@ export default async function Dashboard() {
               <div className="text-center">
                 <Server className="h-10 w-10 text-gray-400 mx-auto mb-3" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  봇이 설치된 서버가 없습니다
+                  서버 정보 로딩 중
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Event Board 봇을 Discord 서버에 초대해보세요
+                  Discord API 요청이 많아 잠시 지연될 수 있습니다
                 </p>
-                <Button className="bg-[#5865F2] hover:bg-[#4752C4] w-full">
-                  봇 초대하기
-                </Button>
+                <RefreshButton className="bg-[#5865F2] hover:bg-[#4752C4] w-full">
+                  새로고침
+                </RefreshButton>
               </div>
             </Card>
           ) : (
@@ -286,14 +295,14 @@ export default async function Dashboard() {
               <div className="text-center py-12">
                 <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  봇이 설치된 서버가 없습니다
+                  서버 정보를 불러오는 중입니다
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Event Board 봇을 Discord 서버에 초대해보세요
+                  Discord API 요청이 많아 잠시 지연될 수 있습니다. 페이지를 새로고침해주세요.
                 </p>
-                <Button className="bg-[#5865F2] hover:bg-[#4752C4]">
-                  봇 초대하기
-                </Button>
+                <RefreshButton className="bg-[#5865F2] hover:bg-[#4752C4]">
+                  새로고침
+                </RefreshButton>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
