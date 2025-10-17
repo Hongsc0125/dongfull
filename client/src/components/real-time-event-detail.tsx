@@ -217,16 +217,40 @@ export function RealTimeEventDetail({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 mb-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Mobile Header */}
+        <div className="block sm:hidden mb-4">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <Link href={`/guild/${guildId}`}>
+              <Button variant="outline" size="sm" className="px-3">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="px-3"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+          <div className="text-xs text-gray-500 text-center">
+            마지막 업데이트: {lastUpdated.toLocaleTimeString()}
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden sm:flex items-center justify-between gap-4 mb-8">
           <Link href={`/guild/${guildId}`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               서버로 돌아가기
             </Button>
           </Link>
-          
+
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Button
               variant="outline"
@@ -241,8 +265,63 @@ export function RealTimeEventDetail({
           </div>
         </div>
 
-        {/* Event Info */}
-        <div className="mb-8">
+        {/* Mobile Event Info */}
+        <div className="block sm:hidden mb-6">
+          <div className="text-center mb-4">
+            <div className={`inline-flex p-3 rounded-lg mb-3 ${event.is_active ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
+              <ScoreIcon className={`h-8 w-8 ${scoreTypeInfo.color}`} />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+              {event.event_name}
+            </h1>
+
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
+              {event.is_active ? (
+                <Badge variant="default" className="bg-green-600 text-xs">
+                  <CheckCircle className="mr-1 h-3 w-3" />
+                  진행 중
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="bg-red-600 text-white text-xs">
+                  <XCircle className="mr-1 h-3 w-3" />
+                  종료됨
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-xs">
+                <ScoreIcon className="mr-1 h-3 w-3" />
+                {scoreTypeInfo.label}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                <AggIcon className="mr-1 h-3 w-3" />
+                {aggregationInfo.label}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                <SortIcon className="mr-1 h-3 w-3" />
+                {sortDirectionInfo.label}
+              </Badge>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-2">
+              <PublicRankingShare eventName={event.event_name} eventId={event.id} />
+              {userIsAdmin && (
+                <>
+                  <EventEditDialog
+                    event={event}
+                    userIsAdmin={userIsAdmin}
+                    onEventUpdated={fetchEventData}
+                    onEventDeleted={handleEventDeleted}
+                    hasScoreEntries={stats.totalEntries > 0}
+                  />
+                  <EnhancedScoreManagement event={event} userIsAdmin={userIsAdmin} onScoreAdded={fetchEventData} />
+                  <EventToggle event={event} userIsAdmin={userIsAdmin} onToggle={fetchEventData} />
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Event Info */}
+        <div className="hidden sm:block mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-lg ${event.is_active ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
@@ -279,15 +358,15 @@ export function RealTimeEventDetail({
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex gap-2">
                 <PublicRankingShare eventName={event.event_name} eventId={event.id} />
                 {userIsAdmin && (
                   <>
-                    <EventEditDialog 
-                      event={event} 
-                      userIsAdmin={userIsAdmin} 
+                    <EventEditDialog
+                      event={event}
+                      userIsAdmin={userIsAdmin}
                       onEventUpdated={fetchEventData}
                       onEventDeleted={handleEventDeleted}
                       hasScoreEntries={stats.totalEntries > 0}
@@ -299,17 +378,57 @@ export function RealTimeEventDetail({
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Event Description & Stats */}
+        <div className="mb-6 sm:mb-8">
           {event.description && (
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                <p className="text-gray-700 dark:text-gray-300">{event.description}</p>
+            <Card className="mb-4 sm:mb-6">
+              <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
+                <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">{event.description}</p>
               </CardContent>
             </Card>
           )}
 
-          {/* Event Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          {/* Mobile Event Stats */}
+          <div className="block sm:hidden grid grid-cols-2 gap-3 mb-6">
+            <Card className="p-3">
+              <div className="text-center">
+                <Users className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-base font-bold">{stats.participantCount}</div>
+                <p className="text-xs text-muted-foreground">참가자</p>
+              </div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-center">
+                <BarChart3 className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-base font-bold">{stats.totalEntries}</div>
+                <p className="text-xs text-muted-foreground">총 기록</p>
+              </div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-center">
+                <AggIcon className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-base font-bold">{aggregationInfo.label}</div>
+                <p className="text-xs text-muted-foreground">집계방식</p>
+              </div>
+            </Card>
+            <Card className="p-3">
+              <div className="text-center">
+                <Calendar className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-base font-bold">
+                  {new Date(event.created_at).toLocaleDateString('ko-KR', {
+                    month: 'numeric',
+                    day: 'numeric'
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">생성일</p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Desktop Event Stats */}
+          <div className="hidden sm:grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">참가자 수</CardTitle>
@@ -392,9 +511,50 @@ export function RealTimeEventDetail({
           onDataUpdated={fetchEventData}
         />
 
-        {/* Discord Commands Info */}
-        {userIsAdmin && (
-          <Card className="mt-8">
+        {/* Mobile Discord Commands Info */}
+        {/* {userIsAdmin && (
+          <Card className="block sm:hidden mt-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">🎮 Discord 명령어</CardTitle>
+              <CardDescription className="text-sm">
+                Discord에서 이벤트를 관리하는 명령어들
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 gap-3">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <code className="text-sm font-mono text-blue-600 font-semibold">/점수추가</code>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
+                    이벤트: {event.event_name}<br />
+                    사용자를 선택하고 점수를 입력하세요
+                  </p>
+                </div>
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <code className="text-sm font-mono text-green-600 font-semibold">/순위</code>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
+                    Discord에서 현재 순위를 확인할 수 있습니다
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <code className="text-sm font-mono text-purple-600 font-semibold">/이벤트정보</code>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
+                    이벤트의 상세 정보와 설정을 확인합니다
+                  </p>
+                </div>
+                <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <code className="text-sm font-mono text-orange-600 font-semibold">/이벤트토글</code>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
+                    이벤트를 활성화하거나 비활성화합니다
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )} */}
+
+        {/* Desktop Discord Commands Info */}
+        {/* {userIsAdmin && (
+          <Card className="hidden sm:block mt-8">
             <CardHeader>
               <CardTitle>🎮 Discord 명령어</CardTitle>
               <CardDescription>
@@ -431,7 +591,7 @@ export function RealTimeEventDetail({
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
       </div>
     </div>
   )

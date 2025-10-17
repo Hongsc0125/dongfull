@@ -99,14 +99,14 @@ export function LeaderboardWithModal({ event, leaderboard, userIsAdmin, onDataUp
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3 sm:pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
                 리더보드
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 {event.is_active ? '현재 순위' : '최종 순위'} (총 {leaderboard.length}명 참가)
               </CardDescription>
             </div>
@@ -117,40 +117,40 @@ export function LeaderboardWithModal({ event, leaderboard, userIsAdmin, onDataUp
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {leaderboard.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <div className="text-center py-8 sm:py-12">
+              <Users className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
                 아직 참가자가 없습니다
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
                 관리자가 점수를 추가하면 여기에 표시됩니다
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {leaderboard.map((participant, index) => {
                 const displayScore = participant.calculated_score !== undefined ? 
                   participant.calculated_score : participant.total_score
                 
                 return (
-                  <div 
+                  <div
                     key={participant.user_id}
-                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                      participant.rank <= 3 
-                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 border-yellow-200 dark:border-yellow-800' 
+                    className={`flex items-center justify-between p-3 sm:p-4 rounded-lg border cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors active:scale-[0.98] sm:active:scale-100 ${
+                      participant.rank <= 3
+                        ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/10 dark:to-orange-900/10 border-yellow-200 dark:border-yellow-800'
                         : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                     }`}
                     onClick={() => handleUserClick(participant)}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <span className="text-xl sm:text-2xl">
                           {getRankEmoji(participant.rank)}
                         </span>
                         <div className="flex flex-col">
-                          <span className="font-bold text-lg">
+                          <span className="font-bold text-base sm:text-lg">
                             {participant.rank}위
                           </span>
                           {participant.rank <= 3 && (
@@ -160,19 +160,19 @@ export function LeaderboardWithModal({ event, leaderboard, userIsAdmin, onDataUp
                           )}
                         </div>
                       </div>
-                      
-                      <div>
-                        <div className="font-semibold text-gray-900 dark:text-white">
+
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
                           {participant.display_name}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           총 {participant.entry_count || 0}회 참여
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
                         {formatScore(displayScore, event.score_type)}
                       </div>
                       {event.score_aggregation !== 'best' && (participant.entry_count || 0) > 1 && (

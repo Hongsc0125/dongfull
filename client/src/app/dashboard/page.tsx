@@ -76,19 +76,22 @@ export default async function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Mobile Header */}
-        <div className="block sm:hidden mb-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="block sm:hidden mb-4 px-2">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-12 w-12">
                 <AvatarImage src={session.user?.image || ''} />
                 <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-lg font-bold text-foreground">
-                  {session.user?.name || '사용자'}님
+                <h1 className="text-base font-bold text-foreground">
+                  안녕하세요!
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Event Board
+                <p className="text-lg font-bold text-foreground">
+                  {session.user?.name || '사용자'}님
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Event Board 대시보드
                 </p>
               </div>
             </div>
@@ -133,31 +136,31 @@ export default async function Dashboard() {
         </div>
 
         {/* Mobile Stats */}
-        <div className="block sm:hidden mb-6">
+        <div className="block sm:hidden mb-4 px-2">
           <div className="grid grid-cols-3 gap-3">
-            <Card className="p-3">
+            <Card className="p-4">
               <div className="text-center">
-                <Server className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-                <div className="text-lg font-bold">{guilds.length}</div>
-                <p className="text-xs text-muted-foreground">총 서버</p>
+                <Server className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <div className="text-base font-bold">{guilds.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">총 서버</p>
               </div>
             </Card>
-            <Card className="p-3">
+            <Card className="p-4">
               <div className="text-center">
-                <Crown className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-                <div className="text-lg font-bold">
+                <Crown className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <div className="text-base font-bold">
                   {guilds.filter(guild => isAdmin(guild)).length}
                 </div>
-                <p className="text-xs text-muted-foreground">관리자</p>
+                <p className="text-xs text-muted-foreground mt-1">관리자</p>
               </div>
             </Card>
-            <Card className="p-3">
+            <Card className="p-4">
               <div className="text-center">
-                <Users className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-                <div className="text-lg font-bold">
+                <Users className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <div className="text-base font-bold">
                   {guilds.filter(guild => !isAdmin(guild)).length}
                 </div>
-                <p className="text-xs text-muted-foreground">일반</p>
+                <p className="text-xs text-muted-foreground mt-1">일반</p>
               </div>
             </Card>
           </div>
@@ -210,7 +213,7 @@ export default async function Dashboard() {
         </div>
 
         {/* Mobile Server List */}
-        <div className="block sm:hidden">
+        <div className="block sm:hidden px-2">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-foreground mb-1">
               서버 목록
@@ -223,14 +226,14 @@ export default async function Dashboard() {
           {guilds.length === 0 ? (
             <Card className="p-6">
               <div className="text-center">
-                <Server className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
+                <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-base font-medium text-foreground mb-2">
                   서버 정보 로딩 중
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                   Discord API 요청이 많아 잠시 지연될 수 있습니다
                 </p>
-                <RefreshButton className="bg-[#5865F2] hover:bg-[#4752C4] w-full">
+                <RefreshButton className="bg-[#5865F2] hover:bg-[#4752C4] w-full text-sm py-2">
                   새로고침
                 </RefreshButton>
               </div>
@@ -239,33 +242,36 @@ export default async function Dashboard() {
             <div className="space-y-3">
               {guilds.map((guild) => (
                 <Link key={guild.id} href={`/guild/${guild.id}`}>
-                  <Card className="hover:shadow-md transition-all cursor-pointer active:scale-95">
+                  <Card className="hover:shadow-md transition-all cursor-pointer active:scale-[0.98] active:bg-slate-50 dark:active:bg-slate-800">
                     <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12 flex-shrink-0">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-14 w-14 flex-shrink-0">
                           <AvatarImage src={getGuildIconUrl(guild) || ''} />
-                          <AvatarFallback>
+                          <AvatarFallback className="text-lg font-semibold">
                             {guild.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-foreground truncate">
+                          <h3 className="font-semibold text-base text-foreground truncate mb-1">
                             {guild.name}
                           </h3>
-                          <div className="flex items-center gap-1 mt-1 overflow-hidden">
+                          <div className="flex items-center gap-2 flex-wrap">
                             {guild.owner && (
-                              <Badge variant="default" className="text-xs px-1">
-                                <Crown className="h-3 w-3" />
+                              <Badge variant="default" className="text-xs px-2 py-1">
+                                <Crown className="h-3 w-3 mr-1" />
+                                소유자
                               </Badge>
                             )}
                             {isAdmin(guild) && !guild.owner && (
-                              <Badge variant="secondary" className="text-xs px-1">
-                                <Settings className="h-3 w-3" />
+                              <Badge variant="secondary" className="text-xs px-2 py-1">
+                                <Settings className="h-3 w-3 mr-1" />
+                                관리자
                               </Badge>
                             )}
                             {!isAdmin(guild) && (
-                              <Badge variant="outline" className="text-xs px-1">
-                                <Users className="h-3 w-3" />
+                              <Badge variant="outline" className="text-xs px-2 py-1">
+                                <Users className="h-3 w-3 mr-1" />
+                                멤버
                               </Badge>
                             )}
                           </div>

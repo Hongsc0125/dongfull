@@ -63,7 +63,7 @@ export function PublicRankingShare({ eventName, eventId }: PublicRankingSharePro
           size="sm"
         >
           <Globe className="h-4 w-4 mr-2" />
-          공개 랭킹 공유
+          공유하기
         </Button>
       </DialogTrigger>
       
@@ -71,13 +71,15 @@ export function PublicRankingShare({ eventName, eventId }: PublicRankingSharePro
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-purple-600" />
-            공개 랭킹 페이지 공유
+            랭킹페이지 공유
           </DialogTitle>
           <DialogDescription className="space-y-2">
-            <p>이 링크는 <strong>로그인 없이</strong> 누구나 볼 수 있는 공개 랭킹 페이지입니다</p>
-            <Badge variant="secondary" className="text-xs">
-              ✨ 실시간 업데이트 • 소셜 미디어 최적화 • 모바일 지원
-            </Badge>
+            <p>
+              <strong>로그인 없이</strong> 누구나 볼 수 있는 랭킹 페이지!
+              <Badge variant="secondary" className="text-xs">
+                ✨ 실시간 업데이트
+              </Badge>
+            </p>
           </DialogDescription>
         </DialogHeader>
         
@@ -123,7 +125,7 @@ export function PublicRankingShare({ eventName, eventId }: PublicRankingSharePro
               onClick={handleNativeShare}
             >
               <Share2 className="h-4 w-4 mr-2" />
-              네이티브 공유
+              공유
             </Button>
           )}
         </div>

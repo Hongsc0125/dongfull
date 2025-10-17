@@ -42,6 +42,9 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
   const [isOpen, setIsOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState("")
   const [score, setScore] = useState("")
+  const [hours, setHours] = useState("")
+  const [minutes, setMinutes] = useState("")
+  const [seconds, setSeconds] = useState("")
   const [note, setNote] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -82,6 +85,9 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
       // 다이얼로그가 닫힐 때 상태 초기화
       setSelectedUserId("")
       setScore("")
+      setHours("")
+      setMinutes("")
+      setSeconds("")
       setNote("")
       setError("")
       setSuccess("")
@@ -112,20 +118,65 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
     }
   }
 
+  // 시/분/초를 총 초로 변환하는 함수
+  const convertTimeToSeconds = () => {
+    const hr = parseInt(hours) || 0
+    const min = parseInt(minutes) || 0
+    const sec = parseInt(seconds) || 0
+    return hr * 3600 + min * 60 + sec
+  }
+
   const handleSubmit = async () => {
-    if (!selectedUserId || !score) {
-      setError("사용자와 점수를 모두 입력해주세요.")
-      return
+    let scoreValue: number
+
+    if (event.score_type === 'time_seconds') {
+      // 시간 타입인 경우 시/분/초 입력 검증
+      if (!hours && !minutes && !seconds) {
+        setError("시, 분 또는 초 중 하나 이상을 입력해주세요.")
+        return
+      }
+
+      const hr = parseInt(hours) || 0
+      const min = parseInt(minutes) || 0
+      const sec = parseInt(seconds) || 0
+
+      if (hr < 0 || min < 0 || sec < 0) {
+        setError("시간은 음수가 될 수 없습니다.")
+        return
+      }
+
+      if (min >= 60) {
+        setError("분은 60 미만이어야 합니다.")
+        return
+      }
+
+      if (sec >= 60) {
+        setError("초는 60 미만이어야 합니다.")
+        return
+      }
+
+      scoreValue = convertTimeToSeconds()
+
+      if (scoreValue <= 0) {
+        setError("총 시간은 0보다 커야 합니다.")
+        return
+      }
+    } else {
+      // 포인트 타입인 경우 기존 로직
+      if (!selectedUserId || !score) {
+        setError("사용자와 점수를 모두 입력해주세요.")
+        return
+      }
+
+      scoreValue = parseFloat(score)
+      if (isNaN(scoreValue)) {
+        setError("유효한 점수를 입력해주세요.")
+        return
+      }
     }
 
-    const scoreValue = parseFloat(score)
-    if (isNaN(scoreValue)) {
-      setError("유효한 점수를 입력해주세요.")
-      return
-    }
-
-    if (event.score_type === 'time_seconds' && scoreValue <= 0) {
-      setError("시간은 0보다 큰 값이어야 합니다.")
+    if (!selectedUserId) {
+      setError("사용자를 선택해주세요.")
       return
     }
 
@@ -182,6 +233,9 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
       // 폼 초기화
       setSelectedUserId("")
       setScore("")
+      setHours("")
+      setMinutes("")
+      setSeconds("")
       setNote("")
       setSearchQuery("")
       setSearchResults([])
@@ -207,7 +261,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
   const formatScoreDisplay = (value: string) => {
     const num = parseFloat(value)
     if (isNaN(num)) return value
-    
+
     if (event.score_type === 'time_seconds') {
       const totalSeconds = Math.round(num)
       if (totalSeconds < 60) {
@@ -226,8 +280,20 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
         return result
       }
     }
-    
+
     return `${num}점`
+  }
+
+  // 시/분/초 입력으로부터 시간 미리보기를 생성하는 함수
+  const getTimePreview = () => {
+    const hr = parseInt(hours) || 0
+    const min = parseInt(minutes) || 0
+    const sec = parseInt(seconds) || 0
+    const totalSeconds = hr * 3600 + min * 60 + sec
+
+    if (totalSeconds === 0) return ""
+
+    return formatScoreDisplay(totalSeconds.toString())
   }
 
   const ScoreIcon = event.score_type === 'points' ? Target : Clock
@@ -261,7 +327,10 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
             점수 추가 - {event.event_name}
           </DialogTitle>
           <DialogDescription>
-            참가자를 선택하고 점수를 입력하세요.
+            {event.score_type === 'points'
+              ? '참가자를 선택하고 포인트를 입력하세요.'
+              : '참가자를 선택하고 시간을 시/분/초로 입력하세요. (입력하지 않은 항목은 0으로 처리됩니다)'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -373,24 +442,77 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
           </div>
 
           {/* 점수 입력 */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="score">
-                점수 ({event.score_type === 'points' ? '포인트' : '시간(초)'}) *
-              </Label>
-              <Input
-                id="score"
-                type="number"
-                placeholder={event.score_type === 'points' ? "예: 100" : "예: 125 (2분 5초)"}
-                value={score}
-                onChange={(e) => setScore(e.target.value)}
-                step={event.score_type === 'time_seconds' ? '0.1' : '1'}
-                min={event.score_type === 'time_seconds' ? '0.1' : undefined}
-              />
-              {score && (
-                <div className="text-sm text-gray-600">
-                  미리보기: {formatScoreDisplay(score)}
-                </div>
+              {event.score_type === 'points' ? (
+                <>
+                  <Label htmlFor="score">포인트 *</Label>
+                  <Input
+                    id="score"
+                    type="number"
+                    placeholder="예: 100"
+                    value={score}
+                    onChange={(e) => setScore(e.target.value)}
+                    step="1"
+                  />
+                  {score && (
+                    <div className="text-sm text-gray-600">
+                      미리보기: {formatScoreDisplay(score)}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Label>시간 *</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label htmlFor="hours" className="text-xs text-gray-500 mb-1 block">시</Label>
+                      <Input
+                        id="hours"
+                        type="number"
+                        placeholder="0"
+                        value={hours}
+                        onChange={(e) => setHours(e.target.value)}
+                        min="0"
+                        step="1"
+                        className="text-center"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="minutes" className="text-xs text-gray-500 mb-1 block">분 (0-59)</Label>
+                      <Input
+                        id="minutes"
+                        type="number"
+                        placeholder="0"
+                        value={minutes}
+                        onChange={(e) => setMinutes(e.target.value)}
+                        min="0"
+                        max="59"
+                        step="1"
+                        className="text-center"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="seconds" className="text-xs text-gray-500 mb-1 block">초 (0-59)</Label>
+                      <Input
+                        id="seconds"
+                        type="number"
+                        placeholder="0"
+                        value={seconds}
+                        onChange={(e) => setSeconds(e.target.value)}
+                        min="0"
+                        max="59"
+                        step="1"
+                        className="text-center"
+                      />
+                    </div>
+                  </div>
+                  {(hours || minutes || seconds) && (
+                    <div className="text-sm text-gray-600 text-center">
+                      미리보기: {getTimePreview()}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -417,7 +539,7 @@ export function EnhancedScoreManagement({ event, userIsAdmin, onScoreAdded }: Sc
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={loading || !selectedUserId || !score}
+            disabled={loading || !selectedUserId || (event.score_type === 'points' ? !score : !hours && !minutes && !seconds)}
           >
             {loading ? (
               <>

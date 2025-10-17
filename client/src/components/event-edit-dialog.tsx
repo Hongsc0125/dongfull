@@ -251,7 +251,7 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, onEventDel
                   </div>
                 </div>
               ) : (
-                <Select value={scoreType} onValueChange={setScoreType}>
+                <Select value={scoreType} onValueChange={(value: 'points' | 'time_seconds') => setScoreType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -265,7 +265,7 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, onEventDel
 
             <div className="space-y-2">
               <Label>순위 정렬</Label>
-              <Select value={sortDirection} onValueChange={setSortDirection}>
+              <Select value={sortDirection} onValueChange={(value: 'asc' | 'desc') => setSortDirection(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -279,7 +279,7 @@ export function EventEditDialog({ event, userIsAdmin, onEventUpdated, onEventDel
 
           <div className="space-y-2">
             <Label>점수 집계 방식</Label>
-            <Select value={scoreAggregation} onValueChange={setScoreAggregation}>
+            <Select value={scoreAggregation} onValueChange={(value: 'sum' | 'average' | 'best') => setScoreAggregation(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

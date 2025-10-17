@@ -12,7 +12,7 @@ interface ScoreEntry {
   score: number
   created_at: string
   added_by: string
-  note?: string
+  note: string | null
 }
 
 interface UserHistoryModalProps {
