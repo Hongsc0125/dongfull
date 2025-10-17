@@ -145,7 +145,7 @@ export function RealTimePublicLeaderboard({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden text-white [color-scheme:dark]">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
@@ -157,7 +157,7 @@ export function RealTimePublicLeaderboard({
           <div className="flex justify-between items-center mb-4">
             <div className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
               <Sparkles className="h-4 w-4 text-yellow-400" />
-              <span className="text-white/90 font-medium text-sm">실시간</span>
+              <span className="text-white font-medium text-sm">실시간</span>
             </div>
 
             <LoadingButton
@@ -176,7 +176,7 @@ export function RealTimePublicLeaderboard({
           </h1>
 
           {event.description && (
-            <p className="text-sm text-white/80 mb-4 px-2">
+            <p className="text-sm text-gray-200 mb-4 px-2">
               {event.description}
             </p>
           )}
@@ -213,28 +213,28 @@ export function RealTimePublicLeaderboard({
           {/* Mobile Stats */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-              <Users className="h-4 w-4 text-white/80 mx-auto mb-1" />
+              <Users className="h-4 w-4 text-gray-300 mx-auto mb-1" />
               <div className="text-lg font-bold text-white">{stats.participantCount}</div>
-              <div className="text-xs text-white/70">참가자</div>
+              <div className="text-xs text-gray-300">참가자</div>
             </div>
             <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-              <BarChart3 className="h-4 w-4 text-white/80 mx-auto mb-1" />
+              <BarChart3 className="h-4 w-4 text-gray-300 mx-auto mb-1" />
               <div className="text-lg font-bold text-white">{stats.totalEntries}</div>
-              <div className="text-xs text-white/70">총 기록</div>
+              <div className="text-xs text-gray-300">총 기록</div>
             </div>
             <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-              <Calendar className="h-4 w-4 text-white/80 mx-auto mb-1" />
+              <Calendar className="h-4 w-4 text-gray-300 mx-auto mb-1" />
               <div className="text-sm font-bold text-white">
                 {new Date(event.created_at).toLocaleDateString('ko-KR', {
                   month: 'short',
                   day: 'numeric'
                 })}
               </div>
-              <div className="text-xs text-white/70">시작일</div>
+              <div className="text-xs text-gray-300">시작일</div>
             </div>
           </div>
 
-          <div className="text-xs text-white/60 mb-1">
+          <div className="text-xs text-gray-400 mb-1">
             마지막 업데이트: {lastUpdated.toLocaleTimeString()}
           </div>
         </div>
@@ -244,7 +244,7 @@ export function RealTimePublicLeaderboard({
           <div className="flex justify-between items-center mb-6">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
               <Sparkles className="h-5 w-5 text-yellow-400" />
-              <span className="text-white/90 font-medium">실시간 랭킹</span>
+              <span className="text-white font-medium">실시간 랭킹</span>
               <Sparkles className="h-5 w-5 text-yellow-400" />
             </div>
 
