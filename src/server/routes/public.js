@@ -27,13 +27,15 @@ router.get('/event/:eventId', async (req, res) => {
             event.guild_name = guild.guild_name;
         }
         
-        // 민감한 정보 제거 (user_id 등)
+        // 민감한 정보 제거하되 avatar_url은 포함 (Discord 프로필 이미지용)
         const publicLeaderboard = leaderboard.map(participant => ({
             rank: participant.rank,
             display_name: participant.display_name,
             calculated_score: participant.calculated_score,
             total_score: participant.total_score,
-            entry_count: participant.entry_count
+            entry_count: participant.entry_count,
+            avatar_url: participant.avatar_url,
+            user_id: participant.user_id // Discord ID for avatar fallback
         }));
         
         res.json({
