@@ -127,7 +127,7 @@ export function ShareButton({ eventName, eventId, className }: ShareButtonProps)
               loadingText="공유 중..."
             >
               <Share2 className="h-4 w-4 mr-2" />
-              네이티브 공유
+              공유
             </LoadingButton>
           )}
         </div>
