@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "$0")"
+
 # Event Board 시작 스크립트
 echo "🚀 Event Board 시작 중..."
 
